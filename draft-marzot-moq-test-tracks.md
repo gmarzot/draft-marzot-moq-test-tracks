@@ -34,6 +34,7 @@ normative:
   MSF: I-D.ietf-moq-msf
   CMSF: I-D.ietf-moq-cmsf
   LOC: I-D.ietf-moq-loc
+  MoQTimestamp: I-D.frindell-moq-timestamp
 
 informative:
   MoQTest: I-D.afrind-moq-test
@@ -152,7 +153,9 @@ to 50000.
 ## Tuple Field 7: Group Duration
 
 This field specifies the interval between video key frames in milliseconds,
-from 100 to 10000. Each video group begins with a key frame.
+from 100 to 10000. Each video group begins with a key frame. The interval
+MUST be a whole number of frames, for example 2000 at 30 frames per second
+or 2002 at 29_97.
 
 ## Tuple Field 8: Video Forwarding Preference
 
@@ -248,18 +251,48 @@ Each video group begins with a key frame and contains the frames up to the
 next key frame. Each video frame is one object, and so is each audio frame.
 With cmaf packaging, each object is one CMAF chunk ({{CMSF}}).
 
-Each media object carries its capture time:
-
-* with loc packaging, in the Timestamp property, as wall-clock time
-  ({{LOC}});
-* with cmaf packaging, in a ProducerReferenceTimeBox (prft);
-* with locmaf packaging, as {{LOCMAF}} specifies.
-
 When tuple field 1 is none:
 
 * Video carries its parameter sets in the payload ({{LOC}}).
 * With aac, the first object of each audio group carries the Audio Config
   property ({{LOC}}).
+
+## Timing
+
+The capture time of a media object is the wall-clock time at which the
+publisher produced the frame. The publisher produces frames on a fixed
+schedule, so the capture time of each object follows from its Group ID and
+Object ID.
+
+Each media track carries the TIMESCALE and TIMESTAMP_MAPPING Track
+Properties {{MoQTimestamp}}, without CLOCK_ID, so that timestamps are
+wall-clock time:
+
+* For video, the timescale is 1000 times the frame rate, or 24000, 30000
+  and 60000 for 23_976, 29_97 and 59_94. The Object Multiplier is 1000, or
+  1001 for those three frame rates.
+* For audio, the timescale is the sample rate. The Object Multiplier is the
+  number of samples per frame.
+* The Group Multiplier is the number of objects per group multiplied by the
+  Object Multiplier. The Base Group is the first Group ID published, and
+  the Base Timestamp is the capture time of its first object.
+
+An object whose capture time differs from its mapped timestamp carries
+OBJECT_TIMESTAMP with the correction. A publisher that keeps to the schedule
+sends no per-object timing.
+
+In addition:
+
+* With loc packaging, the Timestamp property ({{LOC}}) carries the capture
+  time in microseconds since the Unix epoch, and the LOC Timescale property
+  is not sent.
+* With cmaf and locmaf packaging, the first object of each group contains a
+  ProducerReferenceTimeBox (prft) with the capture time.
+
+Latency is the time at which an object is received minus its capture time.
+Measuring it requires the subscriber's clock to agree with the publisher's,
+for example by running the subscriber on the publisher's host, or by
+synchronizing both to a common time source.
 
 # Publisher Behavior
 
