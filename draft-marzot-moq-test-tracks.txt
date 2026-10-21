@@ -4,8 +4,8 @@
 
 Media Over QUIC                                                G. Marzot
 Internet-Draft                                                    Oracle
-Intended status: Informational                           16 October 2026
-Expires: 19 April 2027
+Intended status: Informational                           21 October 2026
+Expires: 24 April 2027
 
 
                          MoQT Media Test Tracks
@@ -53,7 +53,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 19 April 2027.
+   This Internet-Draft will expire on 24 April 2027.
 
 Copyright Notice
 
@@ -91,6 +91,7 @@ Table of Contents
      2.16. Tuple Field 15: Content
      2.17. Tuple Field 16: Duration
    3.  Tracks
+     3.1.  Timing
    4.  Publisher Behavior
    5.  Conventions and Definitions
    6.  Security Considerations
@@ -219,7 +220,8 @@ Table of Contents
 
    This field specifies the interval between video key frames in
    milliseconds, from 100 to 10000.  Each video group begins with a key
-   frame.
+   frame.  The interval MUST be a whole number of frames, for example
+   2000 at 30 frames per second or 2002 at 29_97.
 
 2.9.  Tuple Field 8: Video Forwarding Preference
 
@@ -329,21 +331,53 @@ Table of Contents
    each audio frame.  With cmaf packaging, each object is one CMAF chunk
    ([CMSF]).
 
-   Each media object carries its capture time:
-
-   *  with loc packaging, in the Timestamp property, as wall-clock time
-      ([LOC]);
-
-   *  with cmaf packaging, in a ProducerReferenceTimeBox (prft);
-
-   *  with locmaf packaging, as [LOCMAF] specifies.
-
    When tuple field 1 is none:
 
    *  Video carries its parameter sets in the payload ([LOC]).
 
    *  With aac, the first object of each audio group carries the Audio
       Config property ([LOC]).
+
+3.1.  Timing
+
+   The capture time of a media object is the wall-clock time at which
+   the publisher produced the frame.  The publisher produces frames on a
+   fixed schedule, so the capture time of each object follows from its
+   Group ID and Object ID.
+
+   Each media track carries the TIMESCALE and TIMESTAMP_MAPPING Track
+   Properties [MoQTimestamp], without CLOCK_ID, so that timestamps are
+   wall-clock time:
+
+   *  For video, the timescale is 1000 times the frame rate, or 24000,
+      30000 and 60000 for 23_976, 29_97 and 59_94.  The Object
+      Multiplier is 1000, or 1001 for those three frame rates.
+
+   *  For audio, the timescale is the sample rate.  The Object
+      Multiplier is the number of samples per frame.
+
+   *  The Group Multiplier is the number of objects per group multiplied
+      by the Object Multiplier.  The Base Group is the first Group ID
+      published, and the Base Timestamp is the capture time of its first
+      object.
+
+   An object whose capture time differs from its mapped timestamp
+   carries OBJECT_TIMESTAMP with the correction.  A publisher that keeps
+   to the schedule sends no per-object timing.
+
+   In addition:
+
+   *  With loc packaging, the Timestamp property ([LOC]) carries the
+      capture time in microseconds since the Unix epoch, and the LOC
+      Timescale property is not sent.
+
+   *  With cmaf and locmaf packaging, the first object of each group
+      contains a ProducerReferenceTimeBox (prft) with the capture time.
+
+   Latency is the time at which an object is received minus its capture
+   time.  Measuring it requires the subscriber's clock to agree with the
+   publisher's, for example by running the subscriber on the publisher's
+   host, or by synchronizing both to a common time source.
 
 4.  Publisher Behavior
 
@@ -440,6 +474,13 @@ Table of Contents
               Draft, draft-ietf-moq-transport-22, 1 October 2026,
               <https://datatracker.ietf.org/doc/html/draft-ietf-moq-
               transport-22>.
+
+   [MoQTimestamp]
+              Frindell, A. and I. Swett, "Timestamp Properties for
+              MOQT", Work in Progress, Internet-Draft, draft-frindell-
+              moq-timestamp-00, 5 October 2026,
+              <https://datatracker.ietf.org/doc/html/draft-frindell-moq-
+              timestamp-00>.
 
    [MSF]      Law, W. and S. Nandakumar, "MOQT Streaming Format", Work
               in Progress, Internet-Draft, draft-ietf-moq-msf-01, 2 June

@@ -28,11 +28,11 @@ that a publisher can generate media of a requested shape.
     Jinja2 3.1.6
     lxml 6.1.1
     natsort 8.4.0
-    platformdirs 4.12.2
+    platformdirs 4.13.4
     pycountry 24.6.1
     PyYAML 6.0.3
     requests 2.33.1
-    wcwidth 0.9.1
+    wcwidth 0.9.2
 -->
 <link href="draft-marzot-moq-test-tracks.xml" rel="alternate" type="application/rfc+xml">
 <link href="#copyright" rel="license">
@@ -1052,7 +1052,7 @@ svg {
 </tr></thead>
 <tfoot><tr>
 <td class="left">Marzot</td>
-<td class="center">Expires 19 April 2027</td>
+<td class="center">Expires 24 April 2027</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1065,12 +1065,12 @@ svg {
 <dd class="internet-draft">draft-marzot-moq-test-tracks-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2026-10-16" class="published">16 October 2026</time>
+<time datetime="2026-10-21" class="published">21 October 2026</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Informational</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2027-04-19">19 April 2027</time></dd>
+<dd class="expires"><time datetime="2027-04-24">24 April 2027</time></dd>
 <dt class="label-authors">Author:</dt>
 <dd class="authors">
 <div class="author">
@@ -1124,7 +1124,7 @@ that a publisher can generate media of a requested shape.<a href="#section-abstr
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 19 April 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 24 April 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1214,6 +1214,11 @@ that a publisher can generate media of a requested shape.<a href="#section-abstr
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3">
             <p id="section-toc.1-1.3.1"><a href="#section-3" class="auto internal xref">3</a>.  <a href="#name-tracks" class="internal xref">Tracks</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.1">
+                <p id="section-toc.1-1.3.2.1.1"><a href="#section-3.1" class="auto internal xref">3.1</a>.  <a href="#name-timing" class="internal xref">Timing</a></p>
+</li>
+            </ul>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4">
             <p id="section-toc.1-1.4.1"><a href="#section-4" class="auto internal xref">4</a>.  <a href="#name-publisher-behavior" class="internal xref">Publisher Behavior</a></p>
@@ -1419,7 +1424,9 @@ to 50000.<a href="#section-2.7-1" class="pilcrow">¶</a></p>
 <a href="#section-2.8" class="section-number selfRef">2.8. </a><a href="#name-tuple-field-7-group-duratio" class="section-name selfRef">Tuple Field 7: Group Duration</a>
         </h3>
 <p id="section-2.8-1">This field specifies the interval between video key frames in milliseconds,
-from 100 to 10000. Each video group begins with a key frame.<a href="#section-2.8-1" class="pilcrow">¶</a></p>
+from 100 to 10000. Each video group begins with a key frame. The interval
+<span class="bcp14">MUST</span> be a whole number of frames, for example 2000 at 30 frames per second
+or 2002 at 29_97.<a href="#section-2.8-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="tuple-field-8-video-forwarding-preference">
@@ -1591,29 +1598,65 @@ profile and level.<a href="#section-3-3" class="pilcrow">¶</a></p>
 <p id="section-3-4">Each video group begins with a key frame and contains the frames up to the
 next key frame. Each video frame is one object, and so is each audio frame.
 With cmaf packaging, each object is one CMAF chunk (<span>[<a href="#CMSF" class="cite xref">CMSF</a>]</span>).<a href="#section-3-4" class="pilcrow">¶</a></p>
-<p id="section-3-5">Each media object carries its capture time:<a href="#section-3-5" class="pilcrow">¶</a></p>
+<p id="section-3-5">When tuple field 1 is none:<a href="#section-3-5" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-3-6.1">
-          <p id="section-3-6.1.1">with loc packaging, in the Timestamp property, as wall-clock time
-(<span>[<a href="#LOC" class="cite xref">LOC</a>]</span>);<a href="#section-3-6.1.1" class="pilcrow">¶</a></p>
+          <p id="section-3-6.1.1">Video carries its parameter sets in the payload (<span>[<a href="#LOC" class="cite xref">LOC</a>]</span>).<a href="#section-3-6.1.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-3-6.2">
-          <p id="section-3-6.2.1">with cmaf packaging, in a ProducerReferenceTimeBox (prft);<a href="#section-3-6.2.1" class="pilcrow">¶</a></p>
-</li>
-        <li class="normal" id="section-3-6.3">
-          <p id="section-3-6.3.1">with locmaf packaging, as <span>[<a href="#LOCMAF" class="cite xref">LOCMAF</a>]</span> specifies.<a href="#section-3-6.3.1" class="pilcrow">¶</a></p>
+          <p id="section-3-6.2.1">With aac, the first object of each audio group carries the Audio Config
+property (<span>[<a href="#LOC" class="cite xref">LOC</a>]</span>).<a href="#section-3-6.2.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
-<p id="section-3-7">When tuple field 1 is none:<a href="#section-3-7" class="pilcrow">¶</a></p>
+<div id="timing">
+<section id="section-3.1">
+        <h3 id="name-timing">
+<a href="#section-3.1" class="section-number selfRef">3.1. </a><a href="#name-timing" class="section-name selfRef">Timing</a>
+        </h3>
+<p id="section-3.1-1">The capture time of a media object is the wall-clock time at which the
+publisher produced the frame. The publisher produces frames on a fixed
+schedule, so the capture time of each object follows from its Group ID and
+Object ID.<a href="#section-3.1-1" class="pilcrow">¶</a></p>
+<p id="section-3.1-2">Each media track carries the TIMESCALE and TIMESTAMP_MAPPING Track
+Properties <span>[<a href="#MoQTimestamp" class="cite xref">MoQTimestamp</a>]</span>, without CLOCK_ID, so that timestamps are
+wall-clock time:<a href="#section-3.1-2" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-3-8.1">
-          <p id="section-3-8.1.1">Video carries its parameter sets in the payload (<span>[<a href="#LOC" class="cite xref">LOC</a>]</span>).<a href="#section-3-8.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-3.1-3.1">
+            <p id="section-3.1-3.1.1">For video, the timescale is 1000 times the frame rate, or 24000, 30000
+and 60000 for 23_976, 29_97 and 59_94. The Object Multiplier is 1000, or
+1001 for those three frame rates.<a href="#section-3.1-3.1.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-3-8.2">
-          <p id="section-3-8.2.1">With aac, the first object of each audio group carries the Audio Config
-property (<span>[<a href="#LOC" class="cite xref">LOC</a>]</span>).<a href="#section-3-8.2.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-3.1-3.2">
+            <p id="section-3.1-3.2.1">For audio, the timescale is the sample rate. The Object Multiplier is the
+number of samples per frame.<a href="#section-3.1-3.2.1" class="pilcrow">¶</a></p>
 </li>
-      </ul>
+          <li class="normal" id="section-3.1-3.3">
+            <p id="section-3.1-3.3.1">The Group Multiplier is the number of objects per group multiplied by the
+Object Multiplier. The Base Group is the first Group ID published, and
+the Base Timestamp is the capture time of its first object.<a href="#section-3.1-3.3.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<p id="section-3.1-4">An object whose capture time differs from its mapped timestamp carries
+OBJECT_TIMESTAMP with the correction. A publisher that keeps to the schedule
+sends no per-object timing.<a href="#section-3.1-4" class="pilcrow">¶</a></p>
+<p id="section-3.1-5">In addition:<a href="#section-3.1-5" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-3.1-6.1">
+            <p id="section-3.1-6.1.1">With loc packaging, the Timestamp property (<span>[<a href="#LOC" class="cite xref">LOC</a>]</span>) carries the capture
+time in microseconds since the Unix epoch, and the LOC Timescale property
+is not sent.<a href="#section-3.1-6.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-3.1-6.2">
+            <p id="section-3.1-6.2.1">With cmaf and locmaf packaging, the first object of each group contains a
+ProducerReferenceTimeBox (prft) with the capture time.<a href="#section-3.1-6.2.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<p id="section-3.1-7">Latency is the time at which an object is received minus its capture time.
+Measuring it requires the subscriber's clock to agree with the publisher's,
+for example by running the subscriber on the publisher's host, or by
+synchronizing both to a common time source.<a href="#section-3.1-7" class="pilcrow">¶</a></p>
+</section>
+</div>
 </section>
 </div>
 <div id="publisher-behavior">
@@ -1719,6 +1762,10 @@ authorize subscribers for its prefix.<a href="#section-6-2" class="pilcrow">¶</
 <dt id="MoQT">[MoQT]</dt>
         <dd>
 <span class="refAuthor">Nandakumar, S.</span>, <span class="refAuthor">Vasiliev, V.</span>, <span class="refAuthor">Swett, I.</span>, and <span class="refAuthor">A. Frindell</span>, <span class="refTitle">"Media over QUIC Transport"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-moq-transport-22</span>, <time datetime="2026-10-01" class="refDate">1 October 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-22">https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-22</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="MoQTimestamp">[MoQTimestamp]</dt>
+        <dd>
+<span class="refAuthor">Frindell, A.</span> and <span class="refAuthor">I. Swett</span>, <span class="refTitle">"Timestamp Properties for MOQT"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-frindell-moq-timestamp-00</span>, <time datetime="2026-10-05" class="refDate">5 October 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-frindell-moq-timestamp-00">https://datatracker.ietf.org/doc/html/draft-frindell-moq-timestamp-00</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="MSF">[MSF]</dt>
         <dd>
