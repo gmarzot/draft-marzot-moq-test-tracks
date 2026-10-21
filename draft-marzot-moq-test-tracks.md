@@ -75,7 +75,7 @@ The moq-test-tracks protocol utilizes the Track Namespace to convey the
 parameters of a set of media tracks to the publisher. The Track Namespace
 tuple fields are defined as follows.
 
-* Exactly 17 tuple fields must be provided.
+* Exactly 16 tuple fields must be provided.
 * Tuple fields that precede field 0 are a prefix chosen by the deployment.
   They are not interpreted.
 * There are no default values. MoQT does not permit empty Track Namespace
@@ -124,7 +124,6 @@ This field specifies the video codec. The following values are defined:
 * h264 := H.264 Constrained Baseline
 * h265 := H.265 Main
 * av1 := AV1 Main
-* vp9 := VP9 Profile 0
 * none := No video track
 
 Video is encoded without B-frames, so decode order is presentation order. The
@@ -174,18 +173,12 @@ This field specifies the audio codec. The following values are defined:
 
 * aac := AAC-LC
 * opus := Opus with 20 ms frames
-* pcm := 16-bit little-endian PCM with 20 ms frames
 * none := No audio track
 
-With opus, the sample rate is 48000. Packaging loc is required with pcm.
-When the value is none, fields 10 through 14 are `_`.
+Audio is sampled at 48000 Hz. When the value is none, fields 10 through 13
+are `_`.
 
-## Tuple Field 10: Audio Sample Rate
-
-This field specifies the audio sample rate in Hz. The following values are
-defined: 8000, 16000, 24000, 44100 and 48000.
-
-## Tuple Field 11: Audio Channels
+## Tuple Field 10: Audio Channels
 
 This field specifies the number of audio channels. The following values are
 defined:
@@ -193,17 +186,17 @@ defined:
 * 1 := Mono
 * 2 := Stereo
 
-## Tuple Field 12: Audio Bitrate
+## Tuple Field 11: Audio Bitrate
 
 This field specifies the target audio bitrate in kilobits per second, from 8
-to 512. With pcm, the value is `_`.
+to 512.
 
-## Tuple Field 13: Audio Frames per Group
+## Tuple Field 12: Audio Frames per Group
 
 This field specifies the number of audio frames in each audio group, from 1
 to 100.
 
-## Tuple Field 14: Audio Forwarding Preference
+## Tuple Field 13: Audio Forwarding Preference
 
 This field specifies the forwarding preference for the audio track. The
 following values are defined:
@@ -215,7 +208,7 @@ following values are defined:
 These match the values of moq-test tuple field 1 {{MoQTest}}. Datagram
 requires loc or cmaf packaging.
 
-## Tuple Field 15: Content
+## Tuple Field 14: Content
 
 This field specifies the picture and sound. The content determines how much
 the media compresses, and so the size of the objects. The following values
@@ -230,7 +223,7 @@ are defined:
 * noise := Random noise in picture and sound. The encoder runs at the target
   bitrate.
 
-## Tuple Field 16: Duration
+## Tuple Field 15: Duration
 
 This field specifies the duration of the tracks in seconds, from 0 to 86400.
 The value 0 means the tracks continue until unsubscribed.
@@ -271,7 +264,7 @@ wall-clock time:
 * For video, the timescale is 1000 times the frame rate, or 24000, 30000
   and 60000 for 23_976, 29_97 and 59_94. The Object Multiplier is 1000, or
   1001 for those three frame rates.
-* For audio, the timescale is the sample rate. The Object Multiplier is the
+* For audio, the timescale is 48000. The Object Multiplier is the
   number of samples per frame.
 * The Group Multiplier is the number of objects per group multiplied by the
   Object Multiplier. The Base Group is the first Group ID published, and
@@ -320,11 +313,11 @@ publisher ({{Section 2.4.2 of MoQT}}).
 * It serves later requests for the same Track Namespace from the same media.
 * It MAY stop producing the tracks when no subscriptions remain.
 
-When the duration in tuple field 16 elapses, the publisher ends each track
+When the duration in tuple field 15 elapses, the publisher ends each track
 with PUBLISH_DONE and status code TRACK_ENDED.
 
 When Datagram forwarding preference is used for audio, certain combinations
-of codec, sample rate, channels and bitrate result in objects that cannot be
+of codec, channels and bitrate result in objects that cannot be
 transmitted below the maximum datagram size. If the publisher detects this
 when handling the request, it responds with REQUEST_ERROR. If it detects this
 when publishing an object, it sends PUBLISH_DONE with an error code. The
@@ -367,7 +360,7 @@ The examples write the Track Namespace with its tuple fields separated by
 
 ~~~
 openmoq/mtt/moq_test_tracks_00/
-  msf/loc/h264/720/30/2500/2000/0/aac/48000/2/128/1/0/ts/0
+  msf/loc/h264/720/30/2500/2000/0/aac/2/128/1/0/ts/0
 ~~~
 
 The "video" track of the previous example, in the MoQT name representation
@@ -377,14 +370,14 @@ The "video" track of the previous example, in the MoQT name representation
 =============== NOTE: '\' line wrapping per RFC 8792 ================
 
 openmoq-mtt-moq_test_tracks_00-msf-loc-h264-720-30-2500-2000-0-aac-\
-48000-2-128-1-0-ts-0--video
+2-128-1-0-ts-0--video
 ~~~
 
 1080p60 AV1 with Opus audio on datagrams:
 
 ~~~
 openmoq/mtt/moq_test_tracks_00/
-  msf/loc/av1/1080/60/6000/2000/0/opus/48000/2/64/1/3/ts/0
+  msf/loc/av1/1080/60/6000/2000/0/opus/2/64/1/3/ts/0
 ~~~
 
 720p at 29.97 frames per second, CMSF catalog and CMAF packaging, no audio,
@@ -392,14 +385,14 @@ for 10 minutes:
 
 ~~~
 openmoq/mtt/moq_test_tracks_00/
-  cmsf/cmaf/h264/720/29_97/2500/2002/0/none/_/_/_/_/_/ts/600
+  cmsf/cmaf/h264/720/29_97/2500/2002/0/none/_/_/_/_/ts/600
 ~~~
 
 Opus mono audio only, 10 frames per group, no catalog:
 
 ~~~
 openmoq/mtt/moq_test_tracks_00/
-  none/loc/none/_/_/_/_/_/opus/48000/1/32/10/0/ts/0
+  none/loc/none/_/_/_/_/_/opus/1/32/10/0/ts/0
 ~~~
 
 # Acknowledgments
