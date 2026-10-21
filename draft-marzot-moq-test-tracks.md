@@ -222,6 +222,9 @@ are defined:
   the encoder's minimum.
 * noise := Random noise in picture and sound. The encoder runs at the target
   bitrate.
+* clip := Natural content, such as a film, chosen by the publisher and
+  encoded to the parameters of the namespace. A publisher that offers more
+  than one clip distinguishes them by the Track Namespace prefix.
 
 ## Tuple Field 15: Duration
 
