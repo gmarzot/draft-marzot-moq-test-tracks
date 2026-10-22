@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-10-20T03:29:28.511190+00:00",
+  "timestamp": "2026-10-22T03:22:39.199055+00:00",
   "repo": "gmarzot/draft-marzot-moq-test-tracks",
   "labels": [
     {
@@ -55,5 +55,90 @@
     }
   ],
   "issues": [],
-  "pulls": []
+  "pulls": [
+    {
+      "number": 1,
+      "id": "PR_kwDOVMenWs8AAAABJoiRfw",
+      "title": "Carry wall-clock capture time via timestamp mapping",
+      "url": "https://github.com/gmarzot/draft-marzot-moq-test-tracks/pull/1",
+      "state": "MERGED",
+      "author": "gmarzot",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [],
+      "body": "Adds latency timing to the test tracks without a new tuple field and without per-object bytes on schedule.\n\n- **Tracks \u2192 Timing (new subsection).** Every media track carries the TIMESCALE and TIMESTAMP_MAPPING Track Properties of draft-frindell-moq-timestamp, without CLOCK_ID, so timestamps are wall-clock time. Video timescale is 1000 \u00d7 fps (24000/30000/60000 for the fractional rates, Object Multiplier 1001); audio timescale is the sample rate with the Object Multiplier set to samples per frame. Off-schedule objects carry an OBJECT_TIMESTAMP correction.\n- **LOC:** the Timestamp property is the capture time in \u00b5s since the Unix epoch; the LOC Timescale property is not sent.\n- **CMAF / LOCMAF:** a prft box in the first object of each group.\n- **Tuple Field 7:** the group duration must be a whole number of frames, so the mapping is exact.\n- **Latency:** one paragraph defining latency and noting that it needs agreeing clocks (co-located subscriber, or a common time source).\n- **References:** draft-frindell-moq-timestamp added as normative.\n\nConsidered and left out: an MSF media timeline track (it serves seeking, has ms resolution and a separate subscription) and an in-band clock-offset track.\n\nVerified: i-d-template `make` and `make lint` pass.\n\n\ud83e\udd16 Generated with [Claude Code](https://claude.com/claude-code)",
+      "createdAt": "2026-10-20T19:42:56Z",
+      "updatedAt": "2026-10-21T13:45:03Z",
+      "baseRepository": "gmarzot/draft-marzot-moq-test-tracks",
+      "baseRefName": "main",
+      "baseRefOid": "1767012bf52794c4cc81bdfdcd308d8801eae63f",
+      "headRepository": "gmarzot/draft-marzot-moq-test-tracks",
+      "headRefName": "timing",
+      "headRefOid": "b85b9e834100c60617377815cc71d2f686651836",
+      "closedAt": "2026-10-21T13:44:17Z",
+      "mergedAt": "2026-10-21T13:44:17Z",
+      "mergedBy": "gmarzot",
+      "mergeCommit": {
+        "oid": "57f1772c48fbfc8c84677a61bdb8910c7b913a43"
+      },
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 2,
+      "id": "PR_kwDOVMenWs8AAAABJoke7Q",
+      "title": "Drop audio sample rate field, pcm and vp9",
+      "url": "https://github.com/gmarzot/draft-marzot-moq-test-tracks/pull/2",
+      "state": "MERGED",
+      "author": "gmarzot",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [],
+      "body": "Stacked on #1. Cuts knobs that don't serve the conformance and performance goals of the test tracks.\n\n- **Tuple Field 10 (Audio Sample Rate) removed.** Audio is always 48000 Hz. Fields 11\u201316 become 10\u201315, so a namespace has 16 tuple fields in all. The audio timescale in Timing is 48000.\n- **`pcm` removed** from Tuple Field 9: the target players can't decode it, and only one tool emits it.\n- **`vp9` removed** from Tuple Field 3: rare in MoQ deployments.\n- Examples, the \u00a78.8 rendering, and the field cross-references (none \u21d2 fields 10\u201313 are `_`, duration in field 15) are updated.\n\nVerified: i-d-template `make` and `make lint` pass, and every example has 15 fields after the version tuple.\n\n\ud83e\udd16 Generated with [Claude Code](https://claude.com/claude-code)",
+      "createdAt": "2026-10-20T19:45:36Z",
+      "updatedAt": "2026-10-21T13:45:34Z",
+      "baseRepository": "gmarzot/draft-marzot-moq-test-tracks",
+      "baseRefName": "main",
+      "baseRefOid": "57f1772c48fbfc8c84677a61bdb8910c7b913a43",
+      "headRepository": "gmarzot/draft-marzot-moq-test-tracks",
+      "headRefName": "fewer-knobs",
+      "headRefOid": "caf102cc096d229c198dadb6144973521a198541",
+      "closedAt": "2026-10-21T13:45:31Z",
+      "mergedAt": "2026-10-21T13:45:31Z",
+      "mergedBy": "gmarzot",
+      "mergeCommit": {
+        "oid": "66d0569dfb7fd4c908b38a1cd519f51d53518324"
+      },
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 3,
+      "id": "PR_kwDOVMenWs8AAAABJzNOog",
+      "title": "Add clip content value",
+      "url": "https://github.com/gmarzot/draft-marzot-moq-test-tracks/pull/3",
+      "state": "MERGED",
+      "author": "gmarzot",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [],
+      "body": "Adds `clip` to Tuple Field 14 (Content): natural content, such as a film, chosen by the publisher and encoded to the namespace's parameters. Synthetic patterns cannot stand in for real scene complexity, but the draft does not name any clip: which clip a deployment offers is a publisher choice, expressed in the Track Namespace prefix.\n\nVerified: i-d-template `make` and `make lint` pass.\n\n\ud83e\udd16 Generated with [Claude Code](https://claude.com/claude-code)",
+      "createdAt": "2026-10-21T13:46:28Z",
+      "updatedAt": "2026-10-21T13:47:07Z",
+      "baseRepository": "gmarzot/draft-marzot-moq-test-tracks",
+      "baseRefName": "main",
+      "baseRefOid": "66d0569dfb7fd4c908b38a1cd519f51d53518324",
+      "headRepository": "gmarzot/draft-marzot-moq-test-tracks",
+      "headRefName": "clip-content",
+      "headRefOid": "1a2bdcb4aef4397d546896b5180de9b5af996dd0",
+      "closedAt": "2026-10-21T13:47:05Z",
+      "mergedAt": "2026-10-21T13:47:04Z",
+      "mergedBy": "gmarzot",
+      "mergeCommit": {
+        "oid": "ad5d96e48fac2dbcb2b0d1c88384a6c112d34f69"
+      },
+      "comments": [],
+      "reviews": []
+    }
+  ]
 }
