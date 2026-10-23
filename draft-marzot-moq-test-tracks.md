@@ -38,6 +38,10 @@ normative:
 
 informative:
   MoQTest: I-D.afrind-moq-test
+  MSF-EDITORS:
+    title: "MOQT Streaming Format, editor's copy"
+    target: https://moq-wg.github.io/msf/draft-ietf-moq-msf.html
+    date: 2026-08-25
   LOCMAF: I-D.einarsson-moq-locmaf
   RFC6381:
   RFC8792:
@@ -75,9 +79,10 @@ The moq-test-tracks protocol utilizes the Track Namespace to convey the
 parameters of a set of media tracks to the publisher. The Track Namespace
 tuple fields are defined as follows.
 
-* Exactly 16 tuple fields must be provided.
-* Tuple fields that precede field 0 are a prefix chosen by the deployment.
-  They are not interpreted.
+* A Track Namespace can begin with a prefix: zero or more fields chosen by
+  the deployment, which are not interpreted. The tuple fields defined here
+  follow the prefix and are numbered from 0.
+* Exactly 17 tuple fields must be provided after the prefix.
 * There are no default values. MoQT does not permit empty Track Namespace
   fields {{MoQT}}, so every tuple field carries an explicit value.
 * A field that does not apply to the set of tracks MUST be `_`. For example,
@@ -99,8 +104,8 @@ moq-test-tracks protocol.
 This field specifies the catalog format published on the "catalog" track.
 The following values are defined:
 
-* msf := MSF catalog {{MSF}}
-* cmsf := CMSF catalog {{CMSF}}
+* msf := MSF catalog {{MSF}}, using the CMSF extensions {{CMSF}} for tracks
+  with cmaf or locmaf packaging
 * none := No catalog track
 
 When the value is none, the subscriber learns the media configuration from
@@ -115,22 +120,41 @@ are defined:
 * cmaf := CMAF, as specified by {{CMSF}}
 * locmaf := LOCMAF {{LOCMAF}}
 
-Catalog msf and none require loc. Catalog cmsf requires cmaf or locmaf.
+Catalog none requires loc.
 
-## Tuple Field 3: Video Codec
+## Tuple Field 3: Init Data
+
+This field specifies where the decoder initialization data of the media
+tracks is carried. Each value corresponds to an entry type in the catalog's
+Initialization Data List {{MSF}}; the track-property and object-property
+types are in the MSF editor's copy {{MSF-EDITORS}}. The following values
+are defined:
+
+* catalog := In the catalog (type inline)
+* track := In the VIDEO_CONFIG or AUDIO_CONFIG Track Property (type
+  track-property)
+* object := In the VIDEO_CONFIG or AUDIO_CONFIG Object Property on the first
+  object of each group (type object-property)
+
+With cmaf and locmaf packaging, the value is catalog, as CMSF requires for
+CMAF headers {{CMSF}}. When tuple field 1 is none, the value is `_`, and the
+initialization data is carried in the media itself ({{tracks}}).
+
+## Tuple Field 4: Video Codec
 
 This field specifies the video codec. The following values are defined:
 
-* h264 := H.264 Constrained Baseline
+* h264 := H.264 High
+* h264cb := H.264 Constrained Baseline
 * h265 := H.265 Main
 * av1 := AV1 Main
 * none := No video track
 
 Video is encoded without B-frames, so decode order is presentation order. The
 level is the lowest that fits the height and frame rate. When the value is
-none, fields 4 through 8 are `_`.
+none, fields 5 through 9 are `_`.
 
-## Tuple Field 4: Video Height
+## Tuple Field 5: Video Height
 
 This field specifies the video height in pixels. The following values are
 defined: 180, 360, 480, 540, 720, 1080, 1440 and 2160.
@@ -138,25 +162,25 @@ defined: 180, 360, 480, 540, 720, 1080, 1440 and 2160.
 The width is the height multiplied by 16/9, rounded to the nearest even
 number (854 for a height of 480).
 
-## Tuple Field 5: Frame Rate
+## Tuple Field 6: Frame Rate
 
 This field specifies the video frame rate in frames per second, as an integer
 from 1 to 120. The values 23_976, 29_97 and 59_94 specify 24000/1001,
 30000/1001 and 60000/1001.
 
-## Tuple Field 6: Video Bitrate
+## Tuple Field 7: Video Bitrate
 
 This field specifies the target video bitrate in kilobits per second, from 50
 to 50000.
 
-## Tuple Field 7: Group Duration
+## Tuple Field 8: Group Duration
 
 This field specifies the interval between video key frames in milliseconds,
 from 100 to 10000. Each video group begins with a key frame. The interval
 MUST be a whole number of frames, for example 2000 at 30 frames per second
 or 2002 at 29_97.
 
-## Tuple Field 8: Video Forwarding Preference
+## Tuple Field 9: Video Forwarding Preference
 
 This field specifies the forwarding preference for the video track. The
 following values are defined:
@@ -167,7 +191,7 @@ following values are defined:
 These match the values of moq-test tuple field 1 {{MoQTest}}. The other
 moq-test values are not used for video.
 
-## Tuple Field 9: Audio Codec
+## Tuple Field 10: Audio Codec
 
 This field specifies the audio codec. The following values are defined:
 
@@ -175,10 +199,10 @@ This field specifies the audio codec. The following values are defined:
 * opus := Opus with 20 ms frames
 * none := No audio track
 
-Audio is sampled at 48000 Hz. When the value is none, fields 10 through 13
+Audio is sampled at 48000 Hz. When the value is none, fields 11 through 14
 are `_`.
 
-## Tuple Field 10: Audio Channels
+## Tuple Field 11: Audio Channels
 
 This field specifies the number of audio channels. The following values are
 defined:
@@ -186,17 +210,17 @@ defined:
 * 1 := Mono
 * 2 := Stereo
 
-## Tuple Field 11: Audio Bitrate
+## Tuple Field 12: Audio Bitrate
 
 This field specifies the target audio bitrate in kilobits per second, from 8
 to 512.
 
-## Tuple Field 12: Audio Frames per Group
+## Tuple Field 13: Audio Frames per Group
 
 This field specifies the number of audio frames in each audio group, from 1
 to 100.
 
-## Tuple Field 13: Audio Forwarding Preference
+## Tuple Field 14: Audio Forwarding Preference
 
 This field specifies the forwarding preference for the audio track. The
 following values are defined:
@@ -208,7 +232,7 @@ following values are defined:
 These match the values of moq-test tuple field 1 {{MoQTest}}. Datagram
 requires loc or cmaf packaging.
 
-## Tuple Field 14: Content
+## Tuple Field 15: Content
 
 This field specifies the picture and sound. The content determines how much
 the media compresses, and so the size of the objects. The following values
@@ -226,18 +250,22 @@ are defined:
   encoded to the parameters of the namespace. A publisher that offers more
   than one clip distinguishes them by the Track Namespace prefix.
 
-## Tuple Field 15: Duration
+## Tuple Field 16: Duration
 
 This field specifies the duration of the tracks in seconds, from 0 to 86400.
 The value 0 means the tracks continue until unsubscribed.
 
 # Tracks {#tracks}
 
-The publisher publishes the following tracks in the Track Namespace:
+Under the Track Namespace, the publisher publishes tracks with the following
+Track Names:
 
-* "catalog", unless tuple field 1 is none
-* "video", unless tuple field 3 is none
-* "audio", unless tuple field 9 is none
+* "catalog", unless tuple field 1 is none. This is the Track Name MSF
+  reserves for the catalog {{MSF}}.
+* "video", unless tuple field 4 is none
+* "audio", unless tuple field 10 is none
+
+The "video" and "audio" Track Names are defined by this document.
 
 The catalog describes the "video" and "audio" tracks with the parameters of
 the namespace. This includes the codec string {{RFC6381}} for the exact
@@ -316,7 +344,7 @@ publisher ({{Section 2.4.2 of MoQT}}).
 * It serves later requests for the same Track Namespace from the same media.
 * It MAY stop producing the tracks when no subscriptions remain.
 
-When the duration in tuple field 15 elapses, the publisher ends each track
+When the duration in tuple field 16 elapses, the publisher ends each track
 with PUBLISH_DONE and status code TRACK_ENDED.
 
 When Datagram forwarding preference is used for audio, certain combinations
@@ -359,11 +387,12 @@ This document has no IANA actions.
 The examples write the Track Namespace with its tuple fields separated by
 "/", and wrap it after tuple field 0. The prefix is "openmoq/mtt".
 
-720p30 H.264 with stereo AAC, MSF catalog and LOC packaging:
+720p30 H.264 with stereo AAC, MSF catalog, LOC packaging, initialization
+data in the catalog:
 
 ~~~
 openmoq/mtt/moq_test_tracks_00/
-  msf/loc/h264/720/30/2500/2000/0/aac/2/128/1/0/ts/0
+  msf/loc/catalog/h264/720/30/2500/2000/0/aac/2/128/1/0/ts/0
 ~~~
 
 The "video" track of the previous example, in the MoQT name representation
@@ -372,30 +401,38 @@ The "video" track of the previous example, in the MoQT name representation
 ~~~
 =============== NOTE: '\' line wrapping per RFC 8792 ================
 
-openmoq-mtt-moq_test_tracks_00-msf-loc-h264-720-30-2500-2000-0-aac-\
-2-128-1-0-ts-0--video
+openmoq-mtt-moq_test_tracks_00-msf-loc-catalog-h264-720-30-2500-\
+2000-0-aac-2-128-1-0-ts-0--video
 ~~~
 
-1080p60 AV1 with Opus audio on datagrams:
-
-~~~
-openmoq/mtt/moq_test_tracks_00/
-  msf/loc/av1/1080/60/6000/2000/0/opus/2/64/1/3/ts/0
-~~~
-
-720p at 29.97 frames per second, CMSF catalog and CMAF packaging, no audio,
-for 10 minutes:
+1080p60 AV1 with Opus audio on datagrams, initialization data in Track
+Properties:
 
 ~~~
 openmoq/mtt/moq_test_tracks_00/
-  cmsf/cmaf/h264/720/29_97/2500/2002/0/none/_/_/_/_/ts/600
+  msf/loc/track/av1/1080/60/6000/2000/0/opus/2/64/1/3/ts/0
+~~~
+
+360p30 H.264 Constrained Baseline, initialization data on the first object
+of each group:
+
+~~~
+openmoq/mtt/moq_test_tracks_00/
+  msf/loc/object/h264cb/360/30/600/2000/0/aac/2/128/1/0/ts/0
+~~~
+
+720p at 29.97 frames per second, CMAF packaging, no audio, for 10 minutes:
+
+~~~
+openmoq/mtt/moq_test_tracks_00/
+  msf/cmaf/catalog/h264/720/29_97/2500/2002/0/none/_/_/_/_/ts/600
 ~~~
 
 Opus mono audio only, 10 frames per group, no catalog:
 
 ~~~
 openmoq/mtt/moq_test_tracks_00/
-  none/loc/none/_/_/_/_/_/opus/1/32/10/0/ts/0
+  none/loc/_/none/_/_/_/_/_/opus/1/32/10/0/ts/0
 ~~~
 
 # Acknowledgments
