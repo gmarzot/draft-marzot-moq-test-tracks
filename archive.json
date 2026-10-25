@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-10-22T03:22:39.199055+00:00",
+  "timestamp": "2026-10-25T03:17:34.296208+00:00",
   "repo": "gmarzot/draft-marzot-moq-test-tracks",
   "labels": [
     {
@@ -54,7 +54,32 @@
       "color": "ffffff"
     }
   ],
-  "issues": [],
+  "issues": [
+    {
+      "number": 5,
+      "id": "I_kwDOVMenWs8AAAABZft3BA",
+      "title": "issues from Will L's review",
+      "url": "https://github.com/gmarzot/draft-marzot-moq-test-tracks/issues/5",
+      "state": "CLOSED",
+      "author": "gmarzot",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [],
+      "body": "Just some minor points I noted:\n\n\"Tuple fields that precede field 0 are a prefix chosen by the deployment.\" - how can there be a tuple field lower than 0 ?\n\n\"Catalog cmsf requires cmaf or locmaf.\" - since CMSF extends MSF, it supports everything that MSF supports, so \"loc\" should also be allowed. \n\nWhy H.264 Constrained Baseline? H.264 High profile is supported by nearly all devices?\n\n\"The publisher publishes the following tracks in the Track Namespace:\" - wouldn;t catalog, audio and video be track names rather than namespaces? Catalog is defined as a reserved track name. \n\nYou don;t provide options for how init data is carried (in the catalog, as a track property or as a Object property. Is this intentional?",
+      "createdAt": "2026-10-23T21:47:57Z",
+      "updatedAt": "2026-10-24T17:14:35Z",
+      "closedAt": "2026-10-24T17:14:35Z",
+      "comments": [
+        {
+          "author": "gmarzot",
+          "authorAssociation": "OWNER",
+          "body": "All five points are addressed in #4, now in the [editor's copy](https://gmarzot.github.io/draft-marzot-moq-test-tracks/draft-marzot-moq-test-tracks.html):\n\n1. **Fields before field 0.** Reworded: a namespace can begin with a prefix of fields the deployment chooses, and the defined tuple fields follow it, numbered from 0.\n2. **cmsf with loc.** Catalog (Tuple Field 1) is now `msf | none`. A CMSF catalog carries no marker of its own, so `cmsf` with `loc` would name the same catalog as `msf` with `loc`. `msf` now means an MSF catalog that uses the CMSF extensions for cmaf and locmaf tracks.\n3. **H.264 profile.** `h264` is H.264 High. `h264cb` is Constrained Baseline, kept for constrained devices.\n4. **Track names.** The section is now \"Track Names\". `catalog` is the name MSF reserves; `video` and `audio` are defined here.\n5. **Init data.** New Tuple Field 3: `catalog | track | object`, mapped to MSF's Initialization Data List types (inline, track-property, object-property). cmaf and locmaf use `catalog`, as CMSF requires; with no catalog the field is `_`. Later fields are renumbered; Duration is now Field 16.\n\nThe service follows the same encoding in openmoq/moq-test-tracks#11, deployed at moq-test.ci.openmoq.org.\n",
+          "createdAt": "2026-10-24T17:14:33Z",
+          "updatedAt": "2026-10-24T17:14:33Z"
+        }
+      ]
+    }
+  ],
   "pulls": [
     {
       "number": 1,
@@ -136,6 +161,34 @@
       "mergedBy": "gmarzot",
       "mergeCommit": {
         "oid": "ad5d96e48fac2dbcb2b0d1c88384a6c112d34f69"
+      },
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 4,
+      "id": "PR_kwDOVMenWs8AAAABKTdkdA",
+      "title": "Address review: catalog, init data, H.264 profile, wording",
+      "url": "https://github.com/gmarzot/draft-marzot-moq-test-tracks/pull/4",
+      "state": "MERGED",
+      "author": "gmarzot",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [],
+      "body": "Responds to Will Law's comments on the editor's copy.\n\n1. **Prefix wording.** \"Tuple fields that precede field 0\" read as a field numbered below 0. Now: a namespace can begin with a prefix of deployment-chosen fields, and the defined tuple fields follow it, numbered from 0. Exactly 17 tuple fields after the prefix.\n2. **Catalog (Tuple Field 1): `msf | none`.** CMSF extends MSF, including LOC support, and a CMSF catalog carries no marker of its own (same `version`). `cmsf`+`loc` would have named the same catalog as `msf`+`loc`. `msf` now means an MSF catalog using the CMSF extensions for cmaf and locmaf tracks. Valid pairs: msf with loc, cmaf or locmaf; none with loc.\n3. **H.264 profile (Tuple Field 4).** `h264` = High, `h264cb` = Constrained Baseline; still no B-frames, lowest fitting level.\n4. **Track Names.** The Tracks section now says these are Track Names under the namespace. `catalog` is the name MSF reserves; `video` and `audio` are defined here.\n5. **Init Data (new Tuple Field 3): `catalog | track | object`.** These map to MSF's Initialization Data List entry types: inline, track-property (VIDEO_CONFIG / AUDIO_CONFIG Track Property) and object-property (the same on the first object of each group). The last two are in the MSF editor's copy, now an informative reference. cmaf and locmaf use `catalog`, as CMSF requires for CMAF headers. Without a catalog the field is `_` and init data is in band.\n\nLater fields renumber (Video Codec is now 4 \u2026 Duration 16). Examples updated, including one each for `track` and `object` with `h264cb`.\n\nVerified: i-d-template `make` and `make lint` pass, and every example has 16 fields after the version.\n\n\ud83e\udd16 Generated with [Claude Code](https://claude.com/claude-code)",
+      "createdAt": "2026-10-23T17:06:47Z",
+      "updatedAt": "2026-10-23T17:07:27Z",
+      "baseRepository": "gmarzot/draft-marzot-moq-test-tracks",
+      "baseRefName": "main",
+      "baseRefOid": "ad5d96e48fac2dbcb2b0d1c88384a6c112d34f69",
+      "headRepository": "gmarzot/draft-marzot-moq-test-tracks",
+      "headRefName": "will-review",
+      "headRefOid": "f8ea092fc915876490e44d58185cbc1b8ecb2118",
+      "closedAt": "2026-10-23T17:07:25Z",
+      "mergedAt": "2026-10-23T17:07:25Z",
+      "mergedBy": "gmarzot",
+      "mergeCommit": {
+        "oid": "918634cf30bdee087a587e591e748ee6522bdec5"
       },
       "comments": [],
       "reviews": []
