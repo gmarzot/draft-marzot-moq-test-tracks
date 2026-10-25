@@ -289,10 +289,11 @@ When tuple field 1 is none:
 
 ## Timing
 
-The capture time of a media object is the wall-clock time at which the
-publisher produced the frame. The publisher produces frames on a fixed
-schedule, so the capture time of each object follows from its Group ID and
-Object ID.
+The capture time of a media object is the wall-clock time at which its
+frame is captured, before it is encoded. The publisher captures frames on a
+fixed schedule, so the capture time of each object follows from its Group ID
+and Object ID. A publisher that encodes ahead of time and sends recorded
+media uses each frame's scheduled time as its capture time.
 
 Each media track carries the TIMESCALE and TIMESTAMP_MAPPING Track
 Properties {{MoQTimestamp}}, without CLOCK_ID, so that timestamps are
@@ -320,7 +321,8 @@ In addition:
   ProducerReferenceTimeBox (prft) with the capture time.
 
 Latency is the time at which an object is received minus its capture time.
-Measuring it requires the subscriber's clock to agree with the publisher's,
+It includes encoding only when the publisher encodes live, so latency
+results state how the publisher encoded the media. Measuring it requires the subscriber's clock to agree with the publisher's,
 for example by running the subscriber on the publisher's host, or by
 synchronizing both to a common time source.
 
