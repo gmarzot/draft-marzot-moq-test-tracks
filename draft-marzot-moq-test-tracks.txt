@@ -4,8 +4,8 @@
 
 Media Over QUIC                                                G. Marzot
 Internet-Draft                                                    Oracle
-Intended status: Informational                           23 October 2026
-Expires: 26 April 2027
+Intended status: Informational                           25 October 2026
+Expires: 28 April 2027
 
 
                          MoQT Media Test Tracks
@@ -53,7 +53,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 26 April 2027.
+   This Internet-Draft will expire on 28 April 2027.
 
 Copyright Notice
 
@@ -127,8 +127,10 @@ Table of Contents
    Namespace tuple fields are defined as follows.
 
    *  A Track Namespace can begin with a prefix: zero or more fields
-      chosen by the deployment, which are not interpreted.  The tuple
-      fields defined here follow the prefix and are numbered from 0.
+      chosen by the deployment.  This document does not interpret them,
+      except that the last one identifies the clip when the content is
+      clip (Section 2.16).  The tuple fields defined here follow the
+      prefix and are numbered from 0.
 
    *  Exactly 17 tuple fields must be provided after the prefix.
 
@@ -305,14 +307,15 @@ Table of Contents
 2.16.  Tuple Field 15: Content
 
    This field specifies the picture and sound.  The content determines
-   how much the media compresses, and so the size of the objects.  The
-   following values are defined:
+   how much the media compresses, and so the size of the objects.  Each
+   value names a class of content by what it lets a subscriber measure,
+   not specific media.  The following values are defined:
 
-   *  ts := A moving test pattern with a 440 Hz tone.  The picture shows
-      a frame counter, and SHOULD show the capture time and the group
-      and object IDs.  Once per second, a 1 kHz beep plays for 100 ms
-      and the picture shows a marker for one frame, so that audio/video
-      sync can be checked.
+   *  clock := A moving picture with a 440 Hz tone.  The picture shows
+      the capture time of each frame and a frame counter, and SHOULD
+      show the group and object IDs.  Once per second, a 1 kHz beep
+      plays for 100 ms and the picture shows a marker for one frame, so
+      that audio/video sync can be checked.
 
    *  bars := Static color bars with a 1 kHz tone.  The media compresses
       to near the encoder's minimum.
@@ -320,10 +323,12 @@ Table of Contents
    *  noise := Random noise in picture and sound.  The encoder runs at
       the target bitrate.
 
-   *  clip := Natural content, such as a film, chosen by the publisher
-      and encoded to the parameters of the namespace.  A publisher that
-      offers more than one clip distinguishes them by the Track
-      Namespace prefix.
+   *  clip := Content chosen by the publisher, such as a film or a
+      recorded broadcast, encoded to the parameters of the namespace.
+      This document does not specify any clip.  Each deployment chooses
+      the clips it serves and may add to them.  The last field of the
+      Track Namespace prefix identifies the clip.  When a clip's license
+      requires attribution, the picture SHOULD show it.
 
 2.17.  Tuple Field 16: Duration
 
@@ -432,6 +437,11 @@ Table of Contents
       same media.
 
    *  It MAY stop producing the tracks when no subscriptions remain.
+
+   A publisher that serves clips on demand sends one PUBLISH_NAMESPACE
+   for each clip, with the clip's prefix.  A subscriber can discover the
+   clips a deployment offers by sending SUBSCRIBE_NAMESPACE for the
+   deployment's prefix [MoQT].
 
    When the duration in tuple field 16 elapses, the publisher ends each
    track with PUBLISH_DONE and status code TRACK_ENDED.
@@ -549,13 +559,13 @@ Appendix A.  Examples
 
    The examples write the Track Namespace with its tuple fields
    separated by "/", and wrap it after tuple field 0.  The prefix is
-   "openmoq/mtt".
+   "openmoq/mtt", followed in the last example by a clip identifier.
 
    720p30 H.264 with stereo AAC, MSF catalog, LOC packaging,
    initialization data in the catalog:
 
    openmoq/mtt/moq_test_tracks_00/
-     msf/loc/catalog/h264/720/30/2500/2000/0/aac/2/128/1/0/ts/0
+     msf/loc/catalog/h264/720/30/2500/2000/0/aac/2/128/1/0/clock/0
 
    The "video" track of the previous example, in the MoQT name
    representation (Section 8.8 of [MoQT]), wrapped as specified in
@@ -564,30 +574,36 @@ Appendix A.  Examples
    =============== NOTE: '\' line wrapping per RFC 8792 ================
 
    openmoq-mtt-moq_test_tracks_00-msf-loc-catalog-h264-720-30-2500-\
-   2000-0-aac-2-128-1-0-ts-0--video
+   2000-0-aac-2-128-1-0-clock-0--video
 
    1080p60 AV1 with Opus audio on datagrams, initialization data in
    Track Properties:
 
    openmoq/mtt/moq_test_tracks_00/
-     msf/loc/track/av1/1080/60/6000/2000/0/opus/2/64/1/3/ts/0
+     msf/loc/track/av1/1080/60/6000/2000/0/opus/2/64/1/3/clock/0
 
    360p30 H.264 Constrained Baseline, initialization data on the first
    object of each group:
 
    openmoq/mtt/moq_test_tracks_00/
-     msf/loc/object/h264cb/360/30/600/2000/0/aac/2/128/1/0/ts/0
+     msf/loc/object/h264cb/360/30/600/2000/0/aac/2/128/1/0/clock/0
 
    720p at 29.97 frames per second, CMAF packaging, no audio, for 10
    minutes:
 
    openmoq/mtt/moq_test_tracks_00/
-     msf/cmaf/catalog/h264/720/29_97/2500/2002/0/none/_/_/_/_/ts/600
+     msf/cmaf/catalog/h264/720/29_97/2500/2002/0/none/_/_/_/_/clock/600
 
    Opus mono audio only, 10 frames per group, no catalog:
 
    openmoq/mtt/moq_test_tracks_00/
-     none/loc/_/none/_/_/_/_/_/opus/1/32/10/0/ts/0
+     none/loc/_/none/_/_/_/_/_/opus/1/32/10/0/clock/0
+
+   A clip that the deployment identifies as "clip_a", as 1080p30 H.264
+   with CMAF packaging:
+
+   openmoq/mtt/clip_a/moq_test_tracks_00/
+     msf/cmaf/catalog/h264/1080/30/4500/2000/0/aac/2/128/1/0/clip/0
 
 Acknowledgments
 
