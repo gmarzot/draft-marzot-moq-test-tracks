@@ -1642,10 +1642,11 @@ property (<span>[<a href="#LOC" class="cite xref">LOC</a>]</span>).<a href="#sec
         <h3 id="name-timing">
 <a href="#section-3.1" class="section-number selfRef">3.1. </a><a href="#name-timing" class="section-name selfRef">Timing</a>
         </h3>
-<p id="section-3.1-1">The capture time of a media object is the wall-clock time at which the
-publisher produced the frame. The publisher produces frames on a fixed
-schedule, so the capture time of each object follows from its Group ID and
-Object ID.<a href="#section-3.1-1" class="pilcrow">¶</a></p>
+<p id="section-3.1-1">The capture time of a media object is the wall-clock time at which its
+frame is captured, before it is encoded. The publisher captures frames on a
+fixed schedule, so the capture time of each object follows from its Group ID
+and Object ID. A publisher that encodes ahead of time and sends recorded
+media uses each frame's scheduled time as its capture time.<a href="#section-3.1-1" class="pilcrow">¶</a></p>
 <p id="section-3.1-2">Each media track carries the TIMESCALE and TIMESTAMP_MAPPING Track
 Properties <span>[<a href="#MoQTimestamp" class="cite xref">MoQTimestamp</a>]</span>, without CLOCK_ID, so that timestamps are
 wall-clock time:<a href="#section-3.1-2" class="pilcrow">¶</a></p>
@@ -1681,7 +1682,8 @@ ProducerReferenceTimeBox (prft) with the capture time.<a href="#section-3.1-6.2.
 </li>
         </ul>
 <p id="section-3.1-7">Latency is the time at which an object is received minus its capture time.
-Measuring it requires the subscriber's clock to agree with the publisher's,
+It includes encoding only when the publisher encodes live, so latency
+results state how the publisher encoded the media. Measuring it requires the subscriber's clock to agree with the publisher's,
 for example by running the subscriber on the publisher's host, or by
 synchronizing both to a common time source.<a href="#section-3.1-7" class="pilcrow">¶</a></p>
 </section>
