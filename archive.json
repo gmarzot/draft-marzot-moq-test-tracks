@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-10-25T03:17:34.296208+00:00",
+  "timestamp": "2026-10-27T03:47:45.507171+00:00",
   "repo": "gmarzot/draft-marzot-moq-test-tracks",
   "labels": [
     {
@@ -189,6 +189,62 @@
       "mergedBy": "gmarzot",
       "mergeCommit": {
         "oid": "918634cf30bdee087a587e591e748ee6522bdec5"
+      },
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 6,
+      "id": "PR_kwDOVMenWs8AAAABKl1S-g",
+      "title": "Content classes, publisher-chosen clips and clip discovery",
+      "url": "https://github.com/gmarzot/draft-marzot-moq-test-tracks/pull/6",
+      "state": "MERGED",
+      "author": "gmarzot",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [],
+      "body": "Tuple Field 15 names content by what it lets a subscriber measure, and leaves the choice of real media to each deployment.\n\n- **`ts` \u2192 `clock`.** The picture **must** show the capture time of each frame; it was a SHOULD. The group and object IDs stay SHOULD.\n- **`clip` is publisher-chosen content.** The document specifies no clip. Each deployment chooses its own clips and may add to them. The last field of the Track Namespace prefix identifies the clip, and the prefix bullet in \"Track Namespace Parameters\" now names that one exception to \"not interpreted\". The picture SHOULD carry any attribution a clip's licence requires.\n- **Discovery.** An on-demand publisher sends one PUBLISH_NAMESPACE per clip, with the clip's prefix, so SUBSCRIBE_NAMESPACE on the deployment's prefix lists the clips. No new mechanism.\n- **Extension stays through `clip`.** The defined values remain a closed set, so a test name always has a defined meaning, and an unknown value is still DOES_NOT_EXIST. That avoids an `x_`-style private range (RFC 6648).\n- **Examples** use `clock`, plus a clip example with the neutral id `clip_a`. No real source names appear in the document.\n\nThe service follows in openmoq/moq-test-tracks#16.\n\nThe i-d-template tools aren't installed on my machine, so the build and lint for this change are this repo's CI.\n\n\ud83e\udd16 Generated with [Claude Code](https://claude.com/claude-code)\n",
+      "createdAt": "2026-10-25T14:44:32Z",
+      "updatedAt": "2026-10-25T14:46:01Z",
+      "baseRepository": "gmarzot/draft-marzot-moq-test-tracks",
+      "baseRefName": "main",
+      "baseRefOid": "918634cf30bdee087a587e591e748ee6522bdec5",
+      "headRepository": "gmarzot/draft-marzot-moq-test-tracks",
+      "headRefName": "content-classes",
+      "headRefOid": "a0270569108c5941af67870e9ae9199e0908dbfe",
+      "closedAt": "2026-10-25T14:46:01Z",
+      "mergedAt": "2026-10-25T14:46:01Z",
+      "mergedBy": "gmarzot",
+      "mergeCommit": {
+        "oid": "e8ec9f8db98cd0eab1f1a8b73d665e4b437a3276"
+      },
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 7,
+      "id": "PR_kwDOVMenWs8AAAABKo0N_g",
+      "title": "Capture time is before encoding",
+      "url": "https://github.com/gmarzot/draft-marzot-moq-test-tracks/pull/7",
+      "state": "MERGED",
+      "author": "gmarzot",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [],
+      "body": "The Timing section said capture time is when \"the publisher produced the frame\", which is ambiguous between before and after encoding. On the same path, moq-test-tracks measured about 28 ms for live-encoded LOC and about 2 ms for pre-encoded CMAF loops.\n\n- **Capture time:** the wall-clock time at which the frame is captured, before encoding. A publisher sending recorded (pre-encoded) media uses each frame's scheduled time.\n- **Latency:** it includes encoding only when the publisher encodes live, so latency results state how the media was encoded.\n\n\ud83e\udd16 Generated with [Claude Code](https://claude.com/claude-code)\n",
+      "createdAt": "2026-10-25T21:23:51Z",
+      "updatedAt": "2026-10-25T21:24:25Z",
+      "baseRepository": "gmarzot/draft-marzot-moq-test-tracks",
+      "baseRefName": "main",
+      "baseRefOid": "e8ec9f8db98cd0eab1f1a8b73d665e4b437a3276",
+      "headRepository": "gmarzot/draft-marzot-moq-test-tracks",
+      "headRefName": "capture-time",
+      "headRefOid": "85da48497e82cb439712233162c3383ac07a6788",
+      "closedAt": "2026-10-25T21:24:25Z",
+      "mergedAt": "2026-10-25T21:24:25Z",
+      "mergedBy": "gmarzot",
+      "mergeCommit": {
+        "oid": "5f862ce09b5f7d3d8ee19c2de9803d3da7050094"
       },
       "comments": [],
       "reviews": []
