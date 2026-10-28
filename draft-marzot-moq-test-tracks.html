@@ -1052,7 +1052,7 @@ svg {
 </tr></thead>
 <tfoot><tr>
 <td class="left">Marzot</td>
-<td class="center">Expires 28 April 2027</td>
+<td class="center">Expires 1 May 2027</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1065,12 +1065,12 @@ svg {
 <dd class="internet-draft">draft-marzot-moq-test-tracks-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2026-10-25" class="published">25 October 2026</time>
+<time datetime="2026-10-28" class="published">28 October 2026</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Informational</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2027-04-28">28 April 2027</time></dd>
+<dd class="expires"><time datetime="2027-05-01">1 May 2027</time></dd>
 <dt class="label-authors">Author:</dt>
 <dd class="authors">
 <div class="author">
@@ -1124,7 +1124,7 @@ that a publisher can generate media of a requested shape.<a href="#section-abstr
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 28 April 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 1 May 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1623,7 +1623,9 @@ reserves for the catalog <span>[<a href="#MSF" class="cite xref">MSF</a>]</span>
 <p id="section-3-3">The "video" and "audio" Track Names are defined by this document.<a href="#section-3-3" class="pilcrow">¶</a></p>
 <p id="section-3-4">The catalog describes the "video" and "audio" tracks with the parameters of
 the namespace. This includes the codec string <span>[<a href="#RFC6381" class="cite xref">RFC6381</a>]</span> for the exact
-profile and level.<a href="#section-3-4" class="pilcrow">¶</a></p>
+profile and level.
+Each track in the catalog is live (isLive true) and has a targetLatency of
+250 milliseconds <span>[<a href="#MSF" class="cite xref">MSF</a>]</span>. No tuple field changes the target latency.<a href="#section-3-4" class="pilcrow">¶</a></p>
 <p id="section-3-5">Each video group begins with a key frame and contains the frames up to the
 next key frame. Each video frame is one object, and so is each audio frame.
 With cmaf packaging, each object is one CMAF chunk (<span>[<a href="#CMSF" class="cite xref">CMSF</a>]</span>).<a href="#section-3-5" class="pilcrow">¶</a></p>

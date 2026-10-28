@@ -4,8 +4,8 @@
 
 Media Over QUIC                                                G. Marzot
 Internet-Draft                                                    Oracle
-Intended status: Informational                           25 October 2026
-Expires: 28 April 2027
+Intended status: Informational                           28 October 2026
+Expires: 1 May 2027
 
 
                          MoQT Media Test Tracks
@@ -53,7 +53,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 28 April 2027.
+   This Internet-Draft will expire on 1 May 2027.
 
 Copyright Notice
 
@@ -351,7 +351,9 @@ Table of Contents
 
    The catalog describes the "video" and "audio" tracks with the
    parameters of the namespace.  This includes the codec string
-   [RFC6381] for the exact profile and level.
+   [RFC6381] for the exact profile and level.  Each track in the catalog
+   is live (isLive true) and has a targetLatency of 250 milliseconds
+   [MSF].  No tuple field changes the target latency.
 
    Each video group begins with a key frame and contains the frames up
    to the next key frame.  Each video frame is one object, and so is
