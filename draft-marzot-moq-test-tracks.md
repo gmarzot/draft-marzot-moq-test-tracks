@@ -276,6 +276,8 @@ The "video" and "audio" Track Names are defined by this document.
 The catalog describes the "video" and "audio" tracks with the parameters of
 the namespace. This includes the codec string {{RFC6381}} for the exact
 profile and level.
+Each track in the catalog is live (isLive true) and has a targetLatency of
+200 milliseconds {{MSF}}. No tuple field changes the target latency.
 
 Each video group begins with a key frame and contains the frames up to the
 next key frame. Each video frame is one object, and so is each audio frame.
