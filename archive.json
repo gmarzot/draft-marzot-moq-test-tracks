@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-10-27T03:47:45.507171+00:00",
+  "timestamp": "2026-10-29T04:28:38.814819+00:00",
   "repo": "gmarzot/draft-marzot-moq-test-tracks",
   "labels": [
     {
@@ -245,6 +245,34 @@
       "mergedBy": "gmarzot",
       "mergeCommit": {
         "oid": "5f862ce09b5f7d3d8ee19c2de9803d3da7050094"
+      },
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 8,
+      "id": "PR_kwDOVMenWs8AAAABLRHOLg",
+      "title": "Fix target latency at 250 ms",
+      "url": "https://github.com/gmarzot/draft-marzot-moq-test-tracks/pull/8",
+      "state": "MERGED",
+      "author": "gmarzot",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [],
+      "body": "Every track in the MSF catalog is live and carries `targetLatency` 250 ms. No tuple field sets it.\n\nThe target tells the player how far behind live to render. It describes neither the media nor how it is delivered, so varying it changes nothing a relay, transport or publisher test measures. Fixing it keeps every catalog field determined by the test name, and a player test that needs another target can set it in the player. 250 ms rather than 200 ms: players underran at 200 ms.\n\nThe service side is openmoq/moq-test-tracks#33.\n\n\ud83e\udd16 Generated with [Claude Code](https://claude.com/claude-code)",
+      "createdAt": "2026-10-28T13:16:27Z",
+      "updatedAt": "2026-10-28T18:28:53Z",
+      "baseRepository": "gmarzot/draft-marzot-moq-test-tracks",
+      "baseRefName": "main",
+      "baseRefOid": "5f862ce09b5f7d3d8ee19c2de9803d3da7050094",
+      "headRepository": "gmarzot/draft-marzot-moq-test-tracks",
+      "headRefName": "target-latency-200",
+      "headRefOid": "1b3b2915bfb9c37d4ff074f7c10d09c1f4966bb1",
+      "closedAt": "2026-10-28T18:28:53Z",
+      "mergedAt": "2026-10-28T18:28:53Z",
+      "mergedBy": "gmarzot",
+      "mergeCommit": {
+        "oid": "433288f55823bb89670e55b4fd36b3c0265e9ab3"
       },
       "comments": [],
       "reviews": []
