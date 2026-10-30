@@ -445,7 +445,9 @@ moq-test-tracks Track Namespace also matches the longer Track Namespaces
 that extend it.
 
 When the duration in tuple field 12 elapses, the publisher ends each track
-with PUBLISH_DONE and status code TRACK_ENDED.
+with PUBLISH_DONE and status code TRACK_ENDED. A publisher that ends a set
+of tracks before its duration elapses, for example at a limit of its own,
+ends each track with PUBLISH_DONE.
 
 When audio is sent in datagrams, certain combinations of codec and channels
 result in objects that cannot be transmitted below the maximum datagram
