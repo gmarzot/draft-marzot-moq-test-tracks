@@ -41,7 +41,7 @@ informative:
   MSF-EDITORS:
     title: "MOQT Streaming Format, editor's copy"
     target: https://moq-wg.github.io/msf/draft-ietf-moq-msf.html
-    date: 2026-08-25
+    date: 2026-10-30
   LOCMAF: I-D.einarsson-moq-locmaf
   C4M: I-D.ietf-moq-c4m
   RFC6381:
@@ -67,7 +67,7 @@ shape.
 
 By leveraging the Track Namespace, moq-test-tracks lets testers specify the
 content, catalog format, packaging, codecs, resolution, frame rate, group
-duration, forwarding preferences and number of video tracks. Any publisher
+duration, audio delivery and number of video tracks. Any publisher
 that implements the protocol can produce them, without out-of-band
 coordination. Each set of parameters has one shortest Track Namespace, which
 publishers use, so subscribers requesting the same media share one set of
@@ -83,7 +83,7 @@ tuple fields are defined as follows.
   the deployment. This document does not interpret them, except that the
   last one identifies the clip when the content is clip ({{content}}). The
   tuple fields defined here follow the prefix and are numbered from 0.
-* Tuple fields 0 through 8 are required. Tuple fields 9 through 15 are
+* Tuple fields 0 through 8 are required. Tuple fields 9 through 13 are
   optional: the Track Namespace can end after any tuple field from 8
   onward, and each omitted tuple field takes the value given in its
   section.
@@ -168,7 +168,7 @@ This field specifies the video codec. The following values are defined:
 
 Video is encoded without B-frames, so decode order is presentation order. The
 level is the lowest that fits the height, frame rate and bitrate. When the
-value is none, fields 5, 6, 10, 11 and 15 are `_`.
+value is none, fields 5, 6, 10 and 13 are `_`.
 
 ## Tuple Field 5: Video Height
 
@@ -192,8 +192,8 @@ This field specifies the audio codec. The following values are defined:
 * opus := Opus with 20 ms frames
 * none := No audio track
 
-Audio is sampled at 48000 Hz. When the value is none, fields 8, 12 and 13
-are `_`.
+Audio is sampled at 48000 Hz. When the value is none, fields 8 and 11 are
+`_`.
 
 ## Tuple Field 8: Audio Channels
 
@@ -233,48 +233,28 @@ or 2002 at 29_97.
 When omitted, the value is 2000, or 2002 when tuple field 6 is 23_976, 29_97
 or 59_94.
 
-## Tuple Field 11: Video Forwarding Preference
+## Tuple Field 11: Audio Delivery
 
-This field specifies the forwarding preference for the video tracks. The
+This field specifies how audio frames are grouped and delivered. The
 following values are defined:
 
-* 0 := One subgroup per group
-* 1 := One subgroup per object
+* An integer from 1 to 100 := That many audio frames in each audio group,
+  with each group on one stream ({{tracks}})
+* dgram := Each audio frame is its own group and is sent in a datagram
+  {{MoQT}}
 
-These match the values of moq-test tuple field 1 {{MoQTest}}. The other
-moq-test values are not used for video.
-
-When omitted, the value is 0.
-
-## Tuple Field 12: Audio Frames per Group
-
-This field specifies the number of audio frames in each audio group, from 1
-to 100.
+dgram requires loc or cmaf packaging.
 
 When omitted, the value is 1.
 
-## Tuple Field 13: Audio Forwarding Preference
-
-This field specifies the forwarding preference for the audio track. The
-following values are defined:
-
-* 0 := One subgroup per group
-* 1 := One subgroup per object
-* 3 := Datagram
-
-These match the values of moq-test tuple field 1 {{MoQTest}}. Datagram
-requires loc or cmaf packaging.
-
-When omitted, the value is 0.
-
-## Tuple Field 14: Duration
+## Tuple Field 12: Duration
 
 This field specifies the duration of the tracks in seconds, from 0 to 86400.
 The value 0 means the tracks continue until unsubscribed.
 
 When omitted, the value is 0.
 
-## Tuple Field 15: Video Tracks {#video-tracks}
+## Tuple Field 13: Video Tracks {#video-tracks}
 
 This field specifies how many video tracks the set contains, and how they
 relate. The following values are defined:
@@ -325,7 +305,9 @@ Each track in the catalog is live (isLive true) and has a targetLatency of
 
 Each video group begins with a key frame and contains the frames up to the
 next key frame. Each video frame is one object, and so is each audio frame.
-With cmaf packaging, each object is one CMAF chunk ({{CMSF}}).
+With cmaf packaging, each object is one CMAF chunk ({{CMSF}}). Each group is
+sent on one stream, as subgroup 0 {{MSF}}, except audio sent in datagrams
+(tuple field 11).
 
 When tuple field 2 is none:
 
@@ -360,7 +342,7 @@ The target bitrate of the audio track follows from its codec and channels:
 
 ## Several Video Tracks {#video-sets}
 
-When tuple field 15 specifies more than one video track:
+When tuple field 13 specifies more than one video track:
 
 * All video tracks share the frame rate and group duration. Frames captured
   at the same time have the same Group ID and Object ID in every video
@@ -462,12 +444,12 @@ the requested set of tracks. Likewise, a SUBSCRIBE_NAMESPACE for a
 moq-test-tracks Track Namespace also matches the longer Track Namespaces
 that extend it.
 
-When the duration in tuple field 14 elapses, the publisher ends each track
+When the duration in tuple field 12 elapses, the publisher ends each track
 with PUBLISH_DONE and status code TRACK_ENDED.
 
-When Datagram forwarding preference is used for audio, certain combinations
-of codec and channels result in objects that cannot be transmitted below
-the maximum datagram size. If the publisher detects this when handling the
+When audio is sent in datagrams, certain combinations of codec and channels
+result in objects that cannot be transmitted below the maximum datagram
+size. If the publisher detects this when handling the
 request, it responds with REQUEST_ERROR. If it detects this when publishing
 an object, it sends PUBLISH_DONE with an error code. The publisher MUST NOT
 send such objects on a stream instead.
@@ -476,8 +458,8 @@ Media encoders are not deterministic, so object payloads differ between
 publishers for the same Track Namespace. A subscriber that validates
 moq-test-tracks media checks the parameters of the namespace rather than
 payload bytes. These parameters are the codec configuration, frame rate,
-group duration, objects per group, forwarding preference and the video
-tracks of the set.
+group duration, objects per group, audio delivery and the video tracks of
+the set.
 
 # Conventions and Definitions
 
@@ -521,7 +503,7 @@ publisher names it with the shorter form above:
 
 ~~~
 openmoq/mtt/moq_test_tracks_00/
-  clock/msf/loc/h264/720/30/aac/2/catalog/2000/0/1/0/0/1
+  clock/msf/loc/h264/720/30/aac/2/catalog/2000/1/0/1
 ~~~
 
 The "video" track of the first example, in the MoQT name representation
@@ -536,7 +518,7 @@ Properties:
 
 ~~~
 openmoq/mtt/moq_test_tracks_00/
-  clock/msf/loc/av1/1080/60/opus/2/track/2000/0/1/3
+  clock/msf/loc/av1/1080/60/opus/2/track/2000/dgram
 ~~~
 
 360p30 H.264 Constrained Baseline, initialization data on the first object
@@ -551,14 +533,14 @@ openmoq/mtt/moq_test_tracks_00/
 
 ~~~
 openmoq/mtt/moq_test_tracks_00/
-  clock/msf/cmaf/h264/720/29_97/none/_/catalog/2002/0/_/_/600
+  clock/msf/cmaf/h264/720/29_97/none/_/catalog/2002/_/600
 ~~~
 
 Opus mono audio only, 10 frames per group, no catalog:
 
 ~~~
 openmoq/mtt/moq_test_tracks_00/
-  clock/none/loc/none/_/_/opus/1/_/_/_/10
+  clock/none/loc/none/_/_/opus/1/_/_/10
 ~~~
 
 A clip that the deployment identifies as "clip_a", as 1080p30 H.264 with
@@ -575,7 +557,7 @@ kbps), all in one altGroup:
 
 ~~~
 openmoq/mtt/moq_test_tracks_00/
-  clock/msf/loc/h264/1080/30/aac/2/catalog/2000/0/1/0/0/alt3
+  clock/msf/loc/h264/1080/30/aac/2/catalog/2000/1/0/alt3
 ~~~
 
 Four views of 720p30 H.264, as the tracks "video" ("view 1") through
@@ -583,7 +565,7 @@ Four views of 720p30 H.264, as the tracks "video" ("view 1") through
 
 ~~~
 openmoq/mtt/moq_test_tracks_00/
-  clock/msf/loc/h264/720/30/aac/2/catalog/2000/0/1/0/0/view4
+  clock/msf/loc/h264/720/30/aac/2/catalog/2000/1/0/view4
 ~~~
 
 # Acknowledgments
