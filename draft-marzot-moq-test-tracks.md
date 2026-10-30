@@ -591,7 +591,6 @@ openmoq/mtt/moq_test_tracks_00/
 # Acknowledgments
 {:numbered="false"}
 
-This document is based on the moq-test protocol {{MoQTest}} by Alan
-Frindell, and the author is grateful for it. Thanks also go to the OpenMOQ
-team for their implementations and test deployments, and to the members of
-the IETF Media over QUIC working group for their discussion and review.
+This document builds on moq-test {{MoQTest}} by Alan Frindell. Thanks to
+the OpenMOQ team for implementations and test deployments, and to members
+of the Media over QUIC working group for discussion and review.
