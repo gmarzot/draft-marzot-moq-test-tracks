@@ -1854,7 +1854,9 @@ the requested set of tracks. Likewise, a SUBSCRIBE_NAMESPACE for a
 moq-test-tracks Track Namespace also matches the longer Track Namespaces
 that extend it.<a href="#section-4-8" class="pilcrow">¶</a></p>
 <p id="section-4-9">When the duration in tuple field 12 elapses, the publisher ends each track
-with PUBLISH_DONE and status code TRACK_ENDED.<a href="#section-4-9" class="pilcrow">¶</a></p>
+with PUBLISH_DONE and status code TRACK_ENDED. A publisher that ends a set
+of tracks before its duration elapses, for example at a limit of its own,
+ends each track with PUBLISH_DONE.<a href="#section-4-9" class="pilcrow">¶</a></p>
 <p id="section-4-10">When audio is sent in datagrams, certain combinations of codec and channels
 result in objects that cannot be transmitted below the maximum datagram
 size. If the publisher detects this when handling the
