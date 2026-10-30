@@ -306,8 +306,8 @@ Each track in the catalog is live (isLive true) and has a targetLatency of
 Each video group begins with a key frame and contains the frames up to the
 next key frame. Each video frame is one object, and so is each audio frame.
 With cmaf packaging, each object is one CMAF chunk ({{CMSF}}). Each group is
-sent on one stream, as subgroup 0 {{MSF}}, except audio sent in datagrams
-(tuple field 11).
+sent on one stream, as subgroup 0 {{MSF-EDITORS}}, except audio sent in
+datagrams (tuple field 11).
 
 When tuple field 2 is none:
 
@@ -442,7 +442,10 @@ prefix can therefore forward a request for a longer Track Namespace to the
 publisher of a shorter one, which returns DOES_NOT_EXIST unless it serves
 the requested set of tracks. Likewise, a SUBSCRIBE_NAMESPACE for a
 moq-test-tracks Track Namespace also matches the longer Track Namespaces
-that extend it.
+that extend it. A deployment that runs publishers of fixed sets of tracks
+alongside an on-demand publisher SHOULD give them distinct prefixes.
+Otherwise a relay can route a request that the on-demand publisher would
+serve to a fixed publisher that cannot.
 
 Ending a set of tracks is not an error. When the duration in tuple field 12
 elapses, or when the publisher ends the tracks earlier, for example at a
@@ -453,6 +456,13 @@ limit of its own, the publisher ends each track gracefully {{MoQT}}:
   to the track.
 * If it sent PUBLISH_NAMESPACE for the Track Namespace of the set, it then
   sends PUBLISH_NAMESPACE_DONE.
+
+The End of Track status takes the Location one past the last object of the
+last group. It is sent on that group's stream before the stream ends. When
+that stream has already ended, as is usual for the catalog track, the status
+instead takes the first Location of the next group, on a new stream. With
+dgram audio, the status is sent in a datagram and can be lost, so
+subscribers rely on PUBLISH_DONE.
 
 The publisher does not use GOAWAY to end tracks; GOAWAY asks peers to move
 to a new session.
@@ -582,4 +592,7 @@ openmoq/mtt/moq_test_tracks_00/
 {:numbered="false"}
 
 This document is based on the moq-test protocol {{MoQTest}} by Alan
-Frindell. Members of the Media over QUIC working group.
+Frindell, and the author is grateful for it. Thanks also go to the OpenMOQ
+team for their implementations and test deployments, to the FFmpeg
+developers, whose tools encode the test media, and to the members of the
+IETF Media over QUIC working group for their discussion and review.
