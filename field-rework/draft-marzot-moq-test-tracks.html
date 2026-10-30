@@ -1629,8 +1629,8 @@ Each track in the catalog is live (isLive true) and has a targetLatency of
 <p id="section-3-5">Each video group begins with a key frame and contains the frames up to the
 next key frame. Each video frame is one object, and so is each audio frame.
 With cmaf packaging, each object is one CMAF chunk (<span>[<a href="#CMSF" class="cite xref">CMSF</a>]</span>). Each group is
-sent on one stream, as subgroup 0 <span>[<a href="#MSF" class="cite xref">MSF</a>]</span>, except audio sent in datagrams
-(tuple field 11).<a href="#section-3-5" class="pilcrow">¶</a></p>
+sent on one stream, as subgroup 0 <span>[<a href="#MSF-EDITORS" class="cite xref">MSF-EDITORS</a>]</span>, except audio sent in
+datagrams (tuple field 11).<a href="#section-3-5" class="pilcrow">¶</a></p>
 <p id="section-3-6">When tuple field 2 is none:<a href="#section-3-6" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-3-7.1">
@@ -1852,7 +1852,10 @@ prefix can therefore forward a request for a longer Track Namespace to the
 publisher of a shorter one, which returns DOES_NOT_EXIST unless it serves
 the requested set of tracks. Likewise, a SUBSCRIBE_NAMESPACE for a
 moq-test-tracks Track Namespace also matches the longer Track Namespaces
-that extend it.<a href="#section-4-8" class="pilcrow">¶</a></p>
+that extend it. A deployment that runs publishers of fixed sets of tracks
+alongside an on-demand publisher <span class="bcp14">SHOULD</span> give them distinct prefixes.
+Otherwise a relay can route a request that the on-demand publisher would
+serve to a fixed publisher that cannot.<a href="#section-4-8" class="pilcrow">¶</a></p>
 <p id="section-4-9">Ending a set of tracks is not an error. When the duration in tuple field 12
 elapses, or when the publisher ends the tracks earlier, for example at a
 limit of its own, the publisher ends each track gracefully <span>[<a href="#MoQT" class="cite xref">MoQT</a>]</span>:<a href="#section-4-9" class="pilcrow">¶</a></p>
@@ -1869,20 +1872,26 @@ to the track.<a href="#section-4-10.2.1" class="pilcrow">¶</a></p>
 sends PUBLISH_NAMESPACE_DONE.<a href="#section-4-10.3.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
-<p id="section-4-11">The publisher does not use GOAWAY to end tracks; GOAWAY asks peers to move
-to a new session.<a href="#section-4-11" class="pilcrow">¶</a></p>
-<p id="section-4-12">When audio is sent in datagrams, certain combinations of codec and channels
+<p id="section-4-11">The End of Track status takes the Location one past the last object of the
+last group. It is sent on that group's stream before the stream ends. When
+that stream has already ended, as is usual for the catalog track, the status
+instead takes the first Location of the next group, on a new stream. With
+dgram audio, the status is sent in a datagram and can be lost, so
+subscribers rely on PUBLISH_DONE.<a href="#section-4-11" class="pilcrow">¶</a></p>
+<p id="section-4-12">The publisher does not use GOAWAY to end tracks; GOAWAY asks peers to move
+to a new session.<a href="#section-4-12" class="pilcrow">¶</a></p>
+<p id="section-4-13">When audio is sent in datagrams, certain combinations of codec and channels
 result in objects that cannot be transmitted below the maximum datagram
 size. If the publisher detects this when handling the
 request, it responds with REQUEST_ERROR. If it detects this when publishing
 an object, it sends PUBLISH_DONE with an error code. The publisher <span class="bcp14">MUST NOT</span>
-send such objects on a stream instead.<a href="#section-4-12" class="pilcrow">¶</a></p>
-<p id="section-4-13">Media encoders are not deterministic, so object payloads differ between
+send such objects on a stream instead.<a href="#section-4-13" class="pilcrow">¶</a></p>
+<p id="section-4-14">Media encoders are not deterministic, so object payloads differ between
 publishers for the same Track Namespace. A subscriber that validates
 moq-test-tracks media checks the parameters of the namespace rather than
 payload bytes. These parameters are the codec configuration, frame rate,
 group duration, objects per group, audio delivery and the video tracks of
-the set.<a href="#section-4-13" class="pilcrow">¶</a></p>
+the set.<a href="#section-4-14" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="conventions-and-definitions">
@@ -2087,7 +2096,10 @@ openmoq/mtt/moq_test_tracks_00/
 <a href="#name-acknowledgments" class="section-name selfRef">Acknowledgments</a>
       </h2>
 <p id="appendix-B-1">This document is based on the moq-test protocol <span>[<a href="#MoQTest" class="cite xref">MoQTest</a>]</span> by Alan
-Frindell. Members of the Media over QUIC working group.<a href="#appendix-B-1" class="pilcrow">¶</a></p>
+Frindell, and the author is grateful for it. Thanks also go to the OpenMOQ
+team for their implementations and test deployments, to the FFmpeg
+developers, whose tools encode the test media, and to the members of the
+IETF Media over QUIC working group for their discussion and review.<a href="#appendix-B-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="authors-addresses">
