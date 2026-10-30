@@ -444,10 +444,18 @@ the requested set of tracks. Likewise, a SUBSCRIBE_NAMESPACE for a
 moq-test-tracks Track Namespace also matches the longer Track Namespaces
 that extend it.
 
-When the duration in tuple field 12 elapses, the publisher ends each track
-with PUBLISH_DONE and status code TRACK_ENDED. A publisher that ends a set
-of tracks before its duration elapses, for example at a limit of its own,
-ends each track with PUBLISH_DONE.
+Ending a set of tracks is not an error. When the duration in tuple field 12
+elapses, or when the publisher ends the tracks earlier, for example at a
+limit of its own, the publisher ends each track gracefully {{MoQT}}:
+
+* It marks the end of the track with the End of Track object status.
+* It sends PUBLISH_DONE with status code TRACK_ENDED for each subscription
+  to the track.
+* If it sent PUBLISH_NAMESPACE for the Track Namespace of the set, it then
+  sends PUBLISH_NAMESPACE_DONE.
+
+The publisher does not use GOAWAY to end tracks; GOAWAY asks peers to move
+to a new session.
 
 When audio is sent in datagrams, certain combinations of codec and channels
 result in objects that cannot be transmitted below the maximum datagram
