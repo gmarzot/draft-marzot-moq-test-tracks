@@ -1853,22 +1853,36 @@ publisher of a shorter one, which returns DOES_NOT_EXIST unless it serves
 the requested set of tracks. Likewise, a SUBSCRIBE_NAMESPACE for a
 moq-test-tracks Track Namespace also matches the longer Track Namespaces
 that extend it.<a href="#section-4-8" class="pilcrow">¶</a></p>
-<p id="section-4-9">When the duration in tuple field 12 elapses, the publisher ends each track
-with PUBLISH_DONE and status code TRACK_ENDED. A publisher that ends a set
-of tracks before its duration elapses, for example at a limit of its own,
-ends each track with PUBLISH_DONE.<a href="#section-4-9" class="pilcrow">¶</a></p>
-<p id="section-4-10">When audio is sent in datagrams, certain combinations of codec and channels
+<p id="section-4-9">Ending a set of tracks is not an error. When the duration in tuple field 12
+elapses, or when the publisher ends the tracks earlier, for example at a
+limit of its own, the publisher ends each track gracefully <span>[<a href="#MoQT" class="cite xref">MoQT</a>]</span>:<a href="#section-4-9" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-4-10.1">
+          <p id="section-4-10.1.1">It marks the end of the track with the End of Track object status.<a href="#section-4-10.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-4-10.2">
+          <p id="section-4-10.2.1">It sends PUBLISH_DONE with status code TRACK_ENDED for each subscription
+to the track.<a href="#section-4-10.2.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-4-10.3">
+          <p id="section-4-10.3.1">If it sent PUBLISH_NAMESPACE for the Track Namespace of the set, it then
+sends PUBLISH_NAMESPACE_DONE.<a href="#section-4-10.3.1" class="pilcrow">¶</a></p>
+</li>
+      </ul>
+<p id="section-4-11">The publisher does not use GOAWAY to end tracks; GOAWAY asks peers to move
+to a new session.<a href="#section-4-11" class="pilcrow">¶</a></p>
+<p id="section-4-12">When audio is sent in datagrams, certain combinations of codec and channels
 result in objects that cannot be transmitted below the maximum datagram
 size. If the publisher detects this when handling the
 request, it responds with REQUEST_ERROR. If it detects this when publishing
 an object, it sends PUBLISH_DONE with an error code. The publisher <span class="bcp14">MUST NOT</span>
-send such objects on a stream instead.<a href="#section-4-10" class="pilcrow">¶</a></p>
-<p id="section-4-11">Media encoders are not deterministic, so object payloads differ between
+send such objects on a stream instead.<a href="#section-4-12" class="pilcrow">¶</a></p>
+<p id="section-4-13">Media encoders are not deterministic, so object payloads differ between
 publishers for the same Track Namespace. A subscriber that validates
 moq-test-tracks media checks the parameters of the namespace rather than
 payload bytes. These parameters are the codec configuration, frame rate,
 group duration, objects per group, audio delivery and the video tracks of
-the set.<a href="#section-4-11" class="pilcrow">¶</a></p>
+the set.<a href="#section-4-13" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="conventions-and-definitions">
