@@ -364,9 +364,10 @@ When tuple field 13 specifies more than one video track:
 
 The capture time of a media object is the wall-clock time at which its
 frame is captured, before it is encoded. The publisher captures frames on a
-fixed schedule, so the capture time of each object follows from its Group ID
-and Object ID. A publisher that encodes ahead of time and sends recorded
-media uses each frame's scheduled time as its capture time.
+fixed schedule anchored at the Unix epoch, so the capture time of each
+object follows from its Group ID and Object ID alone. A publisher that
+encodes ahead of time and sends recorded media uses each frame's scheduled
+time as its capture time.
 
 Each media track carries the TIMESCALE and TIMESTAMP_MAPPING Track
 Properties {{MoQTimestamp}}, without CLOCK_ID, so that timestamps are
@@ -378,21 +379,34 @@ wall-clock time:
 * For audio, the timescale is 48000. The Object Multiplier is the
   number of samples per frame.
 * The Group Multiplier is the number of objects per group multiplied by the
-  Object Multiplier. The Base Group is the first Group ID published, and
-  the Base Timestamp is the capture time of its first object, in ticks of
-  the timescale since the Unix epoch.
+  Object Multiplier.
+* The Base Group and the Base Timestamp are 0. The Group ID of a group is
+  the capture time of its first object, in ticks of the timescale since the
+  Unix epoch, divided by the Group Multiplier.
 
-An object whose capture time differs from its mapped timestamp carries
-OBJECT_TIMESTAMP with the correction. A publisher that keeps to the schedule
-sends no per-object timing.
+The Track Properties therefore follow from the Track Namespace alone, so
+every publisher of a track sends the same values, including after a
+restart ({{Section 7 of MoQTimestamp}}). A publisher starts each track at
+its next group boundary.
+
+With `cmaf` and `locmaf` packaging, the media timescale of each track in its
+CMAF header {{CMSF}} is the timescale above, so the media timestamps count
+the same ticks as the mapping.
+
+Capture times are in whole ticks. An object whose capture time differs from
+its mapped timestamp carries OBJECT_TIMESTAMP with the correction. A
+publisher that keeps to the schedule sends no per-object timing.
 
 In addition:
 
 * With `loc` packaging, the Timestamp property ({{LOC}}) carries the capture
-  time in microseconds since the Unix epoch, and the LOC Timescale property
-  is not sent.
+  time in microseconds since the Unix epoch, rounded to the nearest
+  microsecond, and the LOC Timescale property is not sent.
 * With `cmaf` and `locmaf` packaging, the first object of each group
   contains a ProducerReferenceTimeBox (prft) with the capture time.
+
+These times agree with the mapped timestamp to within one tick, as
+microseconds and ticks do not divide evenly.
 
 Latency is the time at which an object is received minus its capture time.
 It includes encoding only when the publisher encodes live, so latency
