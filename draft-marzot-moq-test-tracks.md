@@ -38,10 +38,6 @@ normative:
 
 informative:
   MoQTest: I-D.afrind-moq-test
-  MSF-EDITORS:
-    title: "MOQT Streaming Format, editor's copy"
-    target: https://moq-wg.github.io/msf/draft-ietf-moq-msf.html
-    date: 2026-10-30
   LOCMAF: I-D.einarsson-moq-locmaf
   C4M: I-D.ietf-moq-c4m
   RFC6381:
@@ -77,7 +73,8 @@ tracks, and results from different publishers can be compared.
 
 The moq-test-tracks protocol utilizes the Track Namespace to convey the
 parameters of a set of media tracks to the publisher. The Track Namespace
-tuple fields are defined as follows.
+tuple fields are defined as follows. {{examples}} shows complete Track
+Namespaces.
 
 * A Track Namespace can begin with a prefix: zero or more fields chosen by
   the deployment. This document does not interpret them, except that the
@@ -130,8 +127,10 @@ The following values are defined:
   broadcast, encoded to the parameters of the namespace. This document does
   not specify any clip. Each deployment chooses the clips it serves and may
   add to them. The last field of the Track Namespace prefix identifies the
-  clip. When a clip's license requires attribution, the picture SHOULD show
-  it.
+  clip. A Track Namespace that asks for a track the clip does not have,
+  such as a view or audio, describes tracks the publisher does not support
+  ({{publisher-behavior}}). When a clip's license requires attribution, the
+  picture SHOULD show it.
 
 ## Tuple Field 2: Catalog
 
@@ -207,9 +206,7 @@ defined:
 
 This field specifies where the decoder initialization data of the media
 tracks is carried. Each value corresponds to an entry type in the catalog's
-Initialization Data List {{MSF}}; the track-property and object-property
-types are in the MSF editor's copy {{MSF-EDITORS}}. The following values
-are defined:
+Initialization Data List {{MSF}}. The following values are defined:
 
 * catalog := In the catalog (type inline)
 * track := In the VIDEO_CONFIG or AUDIO_CONFIG Track Property (type
@@ -221,14 +218,15 @@ With cmaf and locmaf packaging, the value is catalog, as CMSF requires for
 CMAF headers {{CMSF}}. When tuple field 2 is none, the value is `_`, and the
 initialization data is carried in the media itself ({{tracks}}).
 
-When omitted, the value is catalog, or `_` when tuple field 2 is none.
+When omitted, the value is catalog.
 
 ## Tuple Field 10: Group Duration
 
 This field specifies the interval between video key frames in milliseconds,
-from 100 to 10000. Each video group begins with a key frame. The interval
-MUST be a whole number of frames, for example 2000 at 30 frames per second
-or 2002 at 29_97.
+from 100 to 10000, and so the duration of each video group ({{tracks}}).
+The interval MUST be a whole number of frames, for example 2000 at 30
+frames per second. At 23_976, 29_97 and 59_94, this makes it a multiple of
+1001, for example 2002.
 
 When omitted, the value is 2000, or 2002 when tuple field 6 is 23_976, 29_97
 or 59_94.
@@ -272,13 +270,13 @@ following rendition has the largest height defined for tuple field 5 that
 is at most three quarters of the height of the rendition before it. N MUST
 NOT exceed the number of renditions this yields from the height of tuple
 field 5. For example, alt4 at a height of 1080 yields 1080, 720, 540 and
-360. Every rendition has the frame rate of tuple field 6 and the bitrate of
-its own height ({{bitrates}}).
+360. The longest ladder, from a height of 2160, has seven renditions: 2160,
+1440, 1080, 720, 540, 360 and 180. Every rendition has the frame rate of
+tuple field 6 and the bitrate of its own height ({{bitrates}}).
 
 With clock, bars or noise content, the views are distinct pictures of that
 content. With clip content, the clip identifies a set of synchronized
-views, and the publisher returns DOES_NOT_EXIST when the clip has fewer
-than N views.
+views ({{content}}).
 
 Values other than 1 require catalog msf.
 
@@ -306,14 +304,17 @@ Each track in the catalog is live (isLive true) and has a targetLatency of
 Each video group begins with a key frame and contains the frames up to the
 next key frame. Each video frame is one object, and so is each audio frame.
 With cmaf packaging, each object is one CMAF chunk ({{CMSF}}). Each group is
-sent on one stream, as subgroup 0 {{MSF-EDITORS}}, except audio sent in
+sent on one stream, as subgroup 0 {{MSF}}, except audio sent in
 datagrams (tuple field 11).
 
 When tuple field 2 is none:
 
-* Video carries its parameter sets in the payload ({{LOC}}).
+* Video carries its decoder configuration in the payload ({{LOC}}): the
+  parameter sets with H.264 and H.265, the sequence header with AV1.
 * With aac, the first object of each audio group carries the Audio Config
   property ({{LOC}}).
+* With opus, no decoder configuration is sent. The subscriber configures
+  its decoder for 48000 Hz and the channel count of tuple field 8.
 
 ## Bitrates {#bitrates}
 
@@ -377,7 +378,8 @@ wall-clock time:
   number of samples per frame.
 * The Group Multiplier is the number of objects per group multiplied by the
   Object Multiplier. The Base Group is the first Group ID published, and
-  the Base Timestamp is the capture time of its first object.
+  the Base Timestamp is the capture time of its first object, in ticks of
+  the timescale since the Unix epoch.
 
 An object whose capture time differs from its mapped timestamp carries
 OBJECT_TIMESTAMP with the correction. A publisher that keeps to the schedule
@@ -397,7 +399,7 @@ results state how the publisher encoded the media. Measuring it requires the sub
 for example by running the subscriber on the publisher's host, or by
 synchronizing both to a common time source.
 
-# Publisher Behavior
+# Publisher Behavior {#publisher-behavior}
 
 If any namespace tuple field is not valid as defined in this document, or
 describes tracks that the publisher does not support, a REQUEST_ERROR with
@@ -432,7 +434,8 @@ publisher ({{Section 2.4.2 of MoQT}}).
 * It MAY stop producing the tracks when no subscriptions remain.
 
 A publisher that serves clips on demand sends one PUBLISH_NAMESPACE for each
-clip, with the clip's prefix. A subscriber can discover the clips a
+clip, for a prefix whose last two tuple fields are the clip identifier and
+"moq_test_tracks_00". A subscriber can discover the clips a
 deployment offers by sending SUBSCRIBE_NAMESPACE for the deployment's prefix
 {{MoQT}}.
 
@@ -469,10 +472,11 @@ to a new session.
 
 When audio is sent in datagrams, certain combinations of codec and channels
 result in objects that cannot be transmitted below the maximum datagram
-size. If the publisher detects this when handling the
-request, it responds with REQUEST_ERROR. If it detects this when publishing
-an object, it sends PUBLISH_DONE with an error code. The publisher MUST NOT
-send such objects on a stream instead.
+size. If the publisher detects this when handling the request, it responds
+with REQUEST_ERROR with error code DOES_NOT_EXIST. If it detects this when
+publishing an object, it sends PUBLISH_DONE with status code
+INTERNAL_ERROR. The publisher MUST NOT send such objects on a stream
+instead.
 
 Media encoders are not deterministic, so object payloads differ between
 publishers for the same Track Namespace. A subscriber that validates
@@ -504,17 +508,17 @@ This document has no IANA actions.
 
 --- back
 
-# Examples
+# Examples {#examples}
 
 The examples write the Track Namespace with its tuple fields separated by
-"/", and wrap it after tuple field 0. The prefix is "openmoq/mtt", followed in
+"/", and wrap it after tuple field 0. The prefix is "example", followed in
 the clip example by a clip identifier.
 
 720p30 H.264 with stereo AAC, MSF catalog, LOC packaging, initialization
 data in the catalog:
 
 ~~~
-openmoq/mtt/moq_test_tracks_00/
+example/moq_test_tracks_00/
   clock/msf/loc/h264/720/30/aac/2
 ~~~
 
@@ -522,7 +526,7 @@ The same set of tracks with every optional tuple field spelled out. A
 publisher names it with the shorter form above:
 
 ~~~
-openmoq/mtt/moq_test_tracks_00/
+example/moq_test_tracks_00/
   clock/msf/loc/h264/720/30/aac/2/catalog/2000/1/0/1
 ~~~
 
@@ -530,14 +534,14 @@ The "video" track of the first example, in the MoQT name representation
 ({{Section 8.8 of MoQT}}):
 
 ~~~
-openmoq-mtt-moq_test_tracks_00-clock-msf-loc-h264-720-30-aac-2--video
+example-moq_test_tracks_00-clock-msf-loc-h264-720-30-aac-2--video
 ~~~
 
 1080p60 AV1 with Opus audio on datagrams, initialization data in Track
 Properties:
 
 ~~~
-openmoq/mtt/moq_test_tracks_00/
+example/moq_test_tracks_00/
   clock/msf/loc/av1/1080/60/opus/2/track/2000/dgram
 ~~~
 
@@ -545,21 +549,21 @@ openmoq/mtt/moq_test_tracks_00/
 of each group:
 
 ~~~
-openmoq/mtt/moq_test_tracks_00/
+example/moq_test_tracks_00/
   clock/msf/loc/h264cb/360/30/aac/2/object
 ~~~
 
 720p at 29.97 frames per second, CMAF packaging, no audio, for 10 minutes:
 
 ~~~
-openmoq/mtt/moq_test_tracks_00/
+example/moq_test_tracks_00/
   clock/msf/cmaf/h264/720/29_97/none/_/catalog/2002/_/600
 ~~~
 
 Opus mono audio only, 10 frames per group, no catalog:
 
 ~~~
-openmoq/mtt/moq_test_tracks_00/
+example/moq_test_tracks_00/
   clock/none/loc/none/_/_/opus/1/_/_/10
 ~~~
 
@@ -567,7 +571,7 @@ A clip that the deployment identifies as "clip_a", as 1080p30 H.264 with
 CMAF packaging:
 
 ~~~
-openmoq/mtt/clip_a/moq_test_tracks_00/
+example/clip_a/moq_test_tracks_00/
   clip/msf/cmaf/h264/1080/30/aac/2
 ~~~
 
@@ -576,7 +580,7 @@ A three-rendition ladder from 1080p30 H.264. The video tracks are "video"
 kbps), all in one altGroup:
 
 ~~~
-openmoq/mtt/moq_test_tracks_00/
+example/moq_test_tracks_00/
   clock/msf/loc/h264/1080/30/aac/2/catalog/2000/1/0/alt3
 ~~~
 
@@ -584,7 +588,7 @@ Four views of 720p30 H.264, as the tracks "video" ("view 1") through
 "video_3" ("view 4"), each in its own altGroup:
 
 ~~~
-openmoq/mtt/moq_test_tracks_00/
+example/moq_test_tracks_00/
   clock/msf/loc/h264/720/30/aac/2/catalog/2000/1/0/view4
 ~~~
 
