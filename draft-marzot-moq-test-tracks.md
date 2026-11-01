@@ -153,7 +153,7 @@ are defined:
 * cmaf := CMAF, as specified by {{CMSF}}
 * locmaf := LOCMAF {{LOCMAF}}
 
-Catalog none requires loc.
+When tuple field 2 is none, the value MUST be loc.
 
 ## Tuple Field 4: Video Codec
 
@@ -167,7 +167,7 @@ This field specifies the video codec. The following values are defined:
 
 Video is encoded without B-frames, so decode order is presentation order. The
 level is the lowest that fits the height, frame rate and bitrate. When the
-value is none, fields 5, 6, 10 and 13 are `_`.
+value is none, tuple fields 5, 6, 10 and 13 MUST be `_`.
 
 ## Tuple Field 5: Video Height
 
@@ -191,8 +191,8 @@ This field specifies the audio codec. The following values are defined:
 * opus := Opus with 20 ms frames
 * none := No audio track
 
-Audio is sampled at 48000 Hz. When the value is none, fields 8 and 11 are
-`_`.
+Audio is sampled at 48000 Hz. When the value is none, tuple fields 8 and 11
+MUST be `_`.
 
 ## Tuple Field 8: Audio Channels
 
@@ -214,9 +214,10 @@ Initialization Data List {{MSF}}. The following values are defined:
 * object := In the VIDEO_CONFIG or AUDIO_CONFIG Object Property on the first
   object of each group (type object-property)
 
-With cmaf and locmaf packaging, the value is catalog, as CMSF requires for
-CMAF headers {{CMSF}}. When tuple field 2 is none, the value is `_`, and the
-initialization data is carried in the media itself ({{tracks}}).
+With cmaf and locmaf packaging, the value MUST be catalog, as CMSF requires
+for CMAF headers {{CMSF}}. When tuple field 2 is none, the value MUST be
+`_`, and the initialization data is carried in the media itself
+({{tracks}}).
 
 When omitted, the value is catalog.
 
@@ -241,7 +242,7 @@ following values are defined:
 * dgram := Each audio frame is its own group and is sent in a datagram
   {{MoQT}}
 
-dgram requires loc or cmaf packaging.
+With dgram, tuple field 3 MUST be loc or cmaf.
 
 When omitted, the value is 1.
 
@@ -278,7 +279,7 @@ With clock, bars or noise content, the views are distinct pictures of that
 content. With clip content, the clip identifies a set of synchronized
 views ({{content}}).
 
-Values other than 1 require catalog msf.
+With values other than 1, tuple field 2 MUST be msf.
 
 # Tracks {#tracks}
 
@@ -402,10 +403,11 @@ synchronizing both to a common time source.
 # Publisher Behavior {#publisher-behavior}
 
 If any namespace tuple field is not valid as defined in this document, or
-describes tracks that the publisher does not support, a REQUEST_ERROR with
-DOES_NOT_EXIST is returned. The reason phrase SHOULD identify the tuple
-field. If producing the tracks would exceed the publisher's limits, a
-REQUEST_ERROR with EXCESSIVE_LOAD is returned.
+describes tracks that the publisher does not support, the publisher MUST
+respond with REQUEST_ERROR with error code DOES_NOT_EXIST. The reason phrase
+SHOULD identify the tuple field. If producing the tracks would exceed the
+publisher's limits, the publisher MUST respond with REQUEST_ERROR with error
+code EXCESSIVE_LOAD.
 
 A publisher delivers a set of tracks in one of two ways. It sends
 PUBLISH_NAMESPACE for the Track Namespace and then PUBLISH for each track,
@@ -418,8 +420,8 @@ publisher MUST publish objects according to the parameters of the namespace.
 
 Upon receiving a SUBSCRIBE_TRACKS whose Track Namespace Prefix is a
 moq-test-tracks Track Namespace, the publisher MUST use PUBLISH to send each
-track in the namespace. If a PUBLISH is rejected, the publisher stops sending
-objects for that track immediately.
+track in the namespace. If a PUBLISH is rejected, the publisher MUST stop
+sending objects for that track immediately.
 
 A publisher MAY serve moq-test-tracks on demand. To do so, it sends
 PUBLISH_NAMESPACE for a prefix whose last tuple field is "moq_test_tracks_00".
@@ -452,7 +454,7 @@ serve to a fixed publisher that cannot.
 
 Ending a set of tracks is not an error. When the duration in tuple field 12
 elapses, or when the publisher ends the tracks earlier, for example at a
-limit of its own, the publisher ends each track gracefully {{MoQT}}:
+limit of its own, the publisher MUST end each track gracefully {{MoQT}}:
 
 * It marks the end of the track with the End of Track object status.
 * It sends PUBLISH_DONE with status code TRACK_ENDED for each subscription
@@ -467,14 +469,14 @@ instead takes the first Location of the next group, on a new stream. With
 dgram audio, the status is sent in a datagram and can be lost, so
 subscribers rely on PUBLISH_DONE.
 
-The publisher does not use GOAWAY to end tracks; GOAWAY asks peers to move
+The publisher MUST NOT use GOAWAY to end tracks; GOAWAY asks peers to move
 to a new session.
 
 When audio is sent in datagrams, certain combinations of codec and channels
 result in objects that cannot be transmitted below the maximum datagram
-size. If the publisher detects this when handling the request, it responds
-with REQUEST_ERROR with error code DOES_NOT_EXIST. If it detects this when
-publishing an object, it sends PUBLISH_DONE with status code
+size. If the publisher detects this when handling the request, it MUST
+respond with REQUEST_ERROR with error code DOES_NOT_EXIST. If it detects
+this when publishing an object, it MUST send PUBLISH_DONE with status code
 INTERNAL_ERROR. The publisher MUST NOT send such objects on a stream
 instead.
 
