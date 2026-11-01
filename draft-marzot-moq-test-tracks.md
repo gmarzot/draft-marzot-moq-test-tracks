@@ -1,5 +1,5 @@
 ---
-title: "MoQT Media Test Tracks"
+title: "MOQT Media Test Tracks"
 abbrev: "moq-test-tracks"
 category: info
 docname: draft-marzot-moq-test-tracks-latest
@@ -30,7 +30,7 @@ author:
     email: giovanni.marzot@oracle.com
 
 normative:
-  MoQT: I-D.ietf-moq-transport
+  MOQT: I-D.ietf-moq-transport
   MSF: I-D.ietf-moq-msf
   CMSF: I-D.ietf-moq-cmsf
   LOC: I-D.ietf-moq-loc
@@ -54,7 +54,7 @@ that a publisher can generate media of a requested shape.
 
 # Introduction
 
-moq-test {{MoQTest}} provides a testing framework for the MOQ transport,
+moq-test {{MoQTest}} provides a testing framework for MOQT {{MOQT}},
 using objects with synthetic payloads. moq-test-tracks extends the same
 approach to media. It lets testers request a set of tracks with encoded
 video and audio, a catalog, and a specific packaging. Catalog parsers,
@@ -78,19 +78,19 @@ Namespaces.
 
 * A Track Namespace can begin with a prefix: zero or more fields chosen by
   the deployment. This document does not interpret them, except that the
-  last one identifies the clip when the content is clip ({{content}}). The
+  last one identifies the clip when the content is `clip` ({{content}}). The
   tuple fields defined here follow the prefix and are numbered from 0.
 * Tuple fields 0 through 8 are required. Tuple fields 9 through 13 are
   optional: the Track Namespace can end after any tuple field from 8
   onward, and each omitted tuple field takes the value given in its
   section.
-* MoQT does not permit empty Track Namespace fields {{MoQT}}, so every
+* MOQT does not permit empty Track Namespace fields {{MOQT}}, so every
   tuple field that is present carries an explicit value.
 * A field that does not apply to the set of tracks MUST be `_`. For example,
   the audio fields are `_` when there is no audio. An omitted field that
   does not apply is `_`.
-* Field values use only the characters a-z, 0-9 and `_`, which the MoQT
-  name representation renders verbatim ({{Section 8.8 of MoQT}}). Numeric
+* Field values use only the characters a-z, 0-9 and `_`, which the MOQT
+  name representation renders verbatim ({{Section 8.8 of MOQT}}). Numeric
   fields are decimal integers without leading zeros.
 
 Track Namespaces that differ only in tuple fields omitted from one and
@@ -138,10 +138,10 @@ This field specifies the catalog format published on the "catalog" track.
 The following values are defined:
 
 * msf := MSF catalog {{MSF}}, using the CMSF extensions {{CMSF}} for tracks
-  with cmaf or locmaf packaging
+  with `cmaf` or `locmaf` packaging
 * none := No catalog track
 
-When the value is none, the subscriber learns the media configuration from
+When the value is `none`, the subscriber learns the media configuration from
 the Track Namespace and from the media itself ({{tracks}}).
 
 ## Tuple Field 3: Packaging
@@ -153,7 +153,7 @@ are defined:
 * cmaf := CMAF, as specified by {{CMSF}}
 * locmaf := LOCMAF {{LOCMAF}}
 
-When tuple field 2 is none, the value MUST be loc.
+When tuple field 2 is `none`, the value MUST be `loc`.
 
 ## Tuple Field 4: Video Codec
 
@@ -167,7 +167,7 @@ This field specifies the video codec. The following values are defined:
 
 Video is encoded without B-frames, so decode order is presentation order. The
 level is the lowest that fits the height, frame rate and bitrate. When the
-value is none, tuple fields 5, 6, 10 and 13 MUST be `_`.
+value is `none`, tuple fields 5, 6, 10 and 13 MUST be `_`.
 
 ## Tuple Field 5: Video Height
 
@@ -180,7 +180,7 @@ number (854 for a height of 480).
 ## Tuple Field 6: Frame Rate
 
 This field specifies the video frame rate in frames per second, as an integer
-from 1 to 120. The values 23_976, 29_97 and 59_94 specify 24000/1001,
+from 1 to 120. The values `23_976`, `29_97` and `59_94` specify 24000/1001,
 30000/1001 and 60000/1001.
 
 ## Tuple Field 7: Audio Codec
@@ -191,7 +191,7 @@ This field specifies the audio codec. The following values are defined:
 * opus := Opus with 20 ms frames
 * none := No audio track
 
-Audio is sampled at 48000 Hz. When the value is none, tuple fields 8 and 11
+Audio is sampled at 48000 Hz. When the value is `none`, tuple fields 8 and 11
 MUST be `_`.
 
 ## Tuple Field 8: Audio Channels
@@ -208,29 +208,29 @@ This field specifies where the decoder initialization data of the media
 tracks is carried. Each value corresponds to an entry type in the catalog's
 Initialization Data List {{MSF}}. The following values are defined:
 
-* catalog := In the catalog (type inline)
+* catalog := In the catalog (type `inline`)
 * track := In the VIDEO_CONFIG or AUDIO_CONFIG Track Property (type
-  track-property)
+  `track-property`)
 * object := In the VIDEO_CONFIG or AUDIO_CONFIG Object Property on the first
-  object of each group (type object-property)
+  object of each group (type `object-property`)
 
-With cmaf and locmaf packaging, the value MUST be catalog, as CMSF requires
-for CMAF headers {{CMSF}}. When tuple field 2 is none, the value MUST be
-`_`, and the initialization data is carried in the media itself
-({{tracks}}).
+With `cmaf` and `locmaf` packaging, the value MUST be `catalog`, as CMSF
+requires for CMAF headers {{CMSF}}. When tuple field 2 is `none`, the
+value MUST be `_`, and the initialization data is carried in the media
+itself ({{tracks}}).
 
-When omitted, the value is catalog.
+When omitted, the value is `catalog`.
 
 ## Tuple Field 10: Group Duration
 
 This field specifies the interval between video key frames in milliseconds,
 from 100 to 10000, and so the duration of each video group ({{tracks}}).
 The interval MUST be a whole number of frames, for example 2000 at 30
-frames per second. At 23_976, 29_97 and 59_94, this makes it a multiple of
-1001, for example 2002.
+frames per second. At `23_976`, `29_97` and `59_94`, this makes it a
+multiple of 1001, for example 2002.
 
-When omitted, the value is 2000, or 2002 when tuple field 6 is 23_976, 29_97
-or 59_94.
+When omitted, the value is 2000, or 2002 when tuple field 6 is `23_976`,
+`29_97` or `59_94`.
 
 ## Tuple Field 11: Audio Delivery
 
@@ -240,9 +240,9 @@ following values are defined:
 * An integer from 1 to 100 := That many audio frames in each audio group,
   with each group on one stream ({{tracks}})
 * dgram := Each audio frame is its own group and is sent in a datagram
-  {{MoQT}}
+  {{MOQT}}
 
-With dgram, tuple field 3 MUST be loc or cmaf.
+With `dgram`, tuple field 3 MUST be `loc` or `cmaf`.
 
 When omitted, the value is 1.
 
@@ -270,28 +270,28 @@ In a ladder, the first rendition has the height of tuple field 5. Each
 following rendition has the largest height defined for tuple field 5 that
 is at most three quarters of the height of the rendition before it. N MUST
 NOT exceed the number of renditions this yields from the height of tuple
-field 5. For example, alt4 at a height of 1080 yields 1080, 720, 540 and
+field 5. For example, `alt4` at a height of 1080 yields 1080, 720, 540 and
 360. The longest ladder, from a height of 2160, has seven renditions: 2160,
 1440, 1080, 720, 540, 360 and 180. Every rendition has the frame rate of
 tuple field 6 and the bitrate of its own height ({{bitrates}}).
 
-With clock, bars or noise content, the views are distinct pictures of that
-content. With clip content, the clip identifies a set of synchronized
+With `clock`, `bars` or `noise` content, the views are distinct pictures of
+that content. With `clip` content, the clip identifies a set of synchronized
 views ({{content}}).
 
-With values other than 1, tuple field 2 MUST be msf.
+With values other than 1, tuple field 2 MUST be `msf`.
 
 # Tracks {#tracks}
 
 Under the Track Namespace, the publisher publishes tracks with the following
 Track Names:
 
-* "catalog", unless tuple field 2 is none. This is the Track Name MSF
+* "catalog", unless tuple field 2 is `none`. This is the Track Name MSF
   reserves for the catalog {{MSF}}.
-* "video", unless tuple field 4 is none. With more than one video track
+* "video", unless tuple field 4 is `none`. With more than one video track
   ({{video-tracks}}), the others are "video_1", "video_2" and so on, in
   ladder or view order.
-* "audio", unless tuple field 7 is none
+* "audio", unless tuple field 7 is `none`
 
 The "video", "video_N" and "audio" Track Names are defined by this
 document.
@@ -304,17 +304,17 @@ Each track in the catalog is live (isLive true) and has a targetLatency of
 
 Each video group begins with a key frame and contains the frames up to the
 next key frame. Each video frame is one object, and so is each audio frame.
-With cmaf packaging, each object is one CMAF chunk ({{CMSF}}). Each group is
+With `cmaf` packaging, each object is one CMAF chunk ({{CMSF}}). Each group is
 sent on one stream, as subgroup 0 {{MSF}}, except audio sent in
 datagrams (tuple field 11).
 
-When tuple field 2 is none:
+When tuple field 2 is `none`:
 
 * Video carries its decoder configuration in the payload ({{LOC}}): the
   parameter sets with H.264 and H.265, the sequence header with AV1.
-* With aac, the first object of each audio group carries the Audio Config
+* With `aac`, the first object of each audio group carries the Audio Config
   property ({{LOC}}).
-* With opus, no decoder configuration is sent. The subscriber configures
+* With `opus`, no decoder configuration is sent. The subscriber configures
   its decoder for 48000 Hz and the channel count of tuple field 8.
 
 ## Bitrates {#bitrates}
@@ -354,8 +354,8 @@ When tuple field 13 specifies more than one video track:
   the height followed by "p", for example "720p". The views are numbered
   from 1 in Track Name order, and the label of a view is "view" followed by
   a space and its number, for example "view 2".
-* With clock, bars or noise content, the picture of every video track shows
-  its label, so that a switch between tracks is visible.
+* With `clock`, `bars` or `noise` content, the picture of every video
+  track shows its label, so that a switch between tracks is visible.
 * In a ladder, the catalog gives all video tracks the same altGroup. Each
   view has an altGroup of its own.
 * The set has one audio track, which has no altGroup.
@@ -373,8 +373,8 @@ Properties {{MoQTimestamp}}, without CLOCK_ID, so that timestamps are
 wall-clock time:
 
 * For video, the timescale is 1000 times the frame rate, or 24000, 30000
-  and 60000 for 23_976, 29_97 and 59_94. The Object Multiplier is 1000, or
-  1001 for those three frame rates.
+  and 60000 for `23_976`, `29_97` and `59_94`. The Object Multiplier is
+  1000, or 1001 for those three frame rates.
 * For audio, the timescale is 48000. The Object Multiplier is the
   number of samples per frame.
 * The Group Multiplier is the number of objects per group multiplied by the
@@ -388,11 +388,11 @@ sends no per-object timing.
 
 In addition:
 
-* With loc packaging, the Timestamp property ({{LOC}}) carries the capture
+* With `loc` packaging, the Timestamp property ({{LOC}}) carries the capture
   time in microseconds since the Unix epoch, and the LOC Timescale property
   is not sent.
-* With cmaf and locmaf packaging, the first object of each group contains a
-  ProducerReferenceTimeBox (prft) with the capture time.
+* With `cmaf` and `locmaf` packaging, the first object of each group
+  contains a ProducerReferenceTimeBox (prft) with the capture time.
 
 Latency is the time at which an object is received minus its capture time.
 It includes encoding only when the publisher encodes live, so latency
@@ -424,9 +424,9 @@ track in the namespace. If a PUBLISH is rejected, the publisher MUST stop
 sending objects for that track immediately.
 
 A publisher MAY serve moq-test-tracks on demand. To do so, it sends
-PUBLISH_NAMESPACE for a prefix whose last tuple field is "moq_test_tracks_00".
+PUBLISH_NAMESPACE for a prefix whose last tuple field is `moq_test_tracks_00`.
 Relays route any SUBSCRIBE whose Track Namespace matches this prefix to the
-publisher ({{Section 2.4.2 of MoQT}}).
+publisher ({{Section 2.4.2 of MOQT}}).
 
 * The publisher begins producing a set of tracks upon the first request for
   its Track Namespace.
@@ -437,9 +437,8 @@ publisher ({{Section 2.4.2 of MoQT}}).
 
 A publisher that serves clips on demand sends one PUBLISH_NAMESPACE for each
 clip, for a prefix whose last two tuple fields are the clip identifier and
-"moq_test_tracks_00". A subscriber can discover the clips a
-deployment offers by sending SUBSCRIBE_NAMESPACE for the deployment's prefix
-{{MoQT}}.
+`moq_test_tracks_00`. A subscriber can discover the clips a deployment
+offers by sending SUBSCRIBE_NAMESPACE for the deployment's prefix {{MOQT}}.
 
 A Track Namespace that omits trailing tuple fields is a tuple prefix of the
 Track Namespaces that spell them out. A relay that routes by Track Namespace
@@ -454,7 +453,7 @@ serve to a fixed publisher that cannot.
 
 Ending a set of tracks is not an error. When the duration in tuple field 12
 elapses, or when the publisher ends the tracks earlier, for example at a
-limit of its own, the publisher MUST end each track gracefully {{MoQT}}:
+limit of its own, the publisher MUST end each track gracefully {{MOQT}}:
 
 * It marks the end of the track with the End of Track object status.
 * It sends PUBLISH_DONE with status code TRACK_ENDED for each subscription
@@ -466,7 +465,7 @@ The End of Track status takes the Location one past the last object of the
 last group. It is sent on that group's stream before the stream ends. When
 that stream has already ended, as is usual for the catalog track, the status
 instead takes the first Location of the next group, on a new stream. With
-dgram audio, the status is sent in a datagram and can be lost, so
+`dgram` audio, the status is sent in a datagram and can be lost, so
 subscribers rely on PUBLISH_DONE.
 
 The publisher MUST NOT use GOAWAY to end tracks; GOAWAY asks peers to move
@@ -532,8 +531,8 @@ example/moq_test_tracks_00/
   clock/msf/loc/h264/720/30/aac/2/catalog/2000/1/0/1
 ~~~
 
-The "video" track of the first example, in the MoQT name representation
-({{Section 8.8 of MoQT}}):
+The "video" track of the first example, in the MOQT name representation
+({{Section 8.8 of MOQT}}):
 
 ~~~
 example-moq_test_tracks_00-clock-msf-loc-h264-720-30-aac-2--video
