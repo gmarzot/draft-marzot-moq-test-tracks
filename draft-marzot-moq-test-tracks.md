@@ -437,7 +437,10 @@ publisher MUST publish objects according to the parameters of the namespace.
 Upon receiving a SUBSCRIBE_TRACKS whose Track Namespace Prefix is a
 moq-test-tracks Track Namespace, the publisher MUST use PUBLISH to send each
 track in the namespace. If a PUBLISH is rejected, the publisher MUST stop
-sending objects for that track immediately.
+sending objects for that track immediately. A Track Namespace Prefix that
+ends before tuple field 7 names no set of tracks. For such a prefix, the
+publisher sends PUBLISH only for the tracks of sets it is already producing
+under the prefix, and starts no new set.
 
 A publisher MAY serve moq-test-tracks on demand. To do so, it sends
 PUBLISH_NAMESPACE for a prefix that ends with `mtt_00`, or with `mtt_00`
@@ -445,16 +448,27 @@ and a value of tuple field 1 to serve only that content, such as one clip.
 Relays route any SUBSCRIBE whose Track Namespace matches this prefix to the
 publisher ({{Section 2.4.2 of MOQT}}).
 
+* The prefix is the only Track Namespace the publisher announces for the
+  sets of tracks it can produce. The parameters allow far too many sets to
+  enumerate, and no set exists until a request names its Track Namespace.
 * The publisher begins producing a set of tracks upon the first request for
-  its Track Namespace.
+  its Track Namespace. While it produces the set, it MAY send
+  PUBLISH_NAMESPACE for the set's Track Namespace. If it does, it sends
+  PUBLISH_NAMESPACE_DONE when it stops producing the set.
 * It serves later requests for the same Track Namespace from the same media.
   It MAY also serve a Track Namespace that describes the same set of tracks
   from the same media.
 * It MAY stop producing the tracks when no subscriptions remain.
 
-A subscriber can discover the content a deployment serves, including its
-clips, by sending SUBSCRIBE_NAMESPACE for the deployment's prefix followed
-by `mtt_00` {{MOQT}}.
+A subscriber discovers what a deployment serves by sending
+SUBSCRIBE_NAMESPACE for the deployment's prefix followed by `mtt_00`
+{{MOQT}}. It receives the prefixes that on-demand publishers announce, and
+the Track Namespaces of the sets that publishers announce while producing
+them. An on-demand publisher that announces one prefix for each value of
+tuple field 1 it serves thereby lists its content, including its clips. The
+subscriber does not learn which other parameters a publisher supports. It
+writes out the Track Namespace it wants, and a publisher that does not
+support that set of tracks responds with DOES_NOT_EXIST.
 
 A Track Namespace that omits trailing tuple fields is a tuple prefix of the
 Track Namespaces that spell them out. A relay that routes by Track Namespace
@@ -462,10 +476,11 @@ prefix can therefore forward a request for a longer Track Namespace to the
 publisher of a shorter one, which returns DOES_NOT_EXIST unless it serves
 the requested set of tracks. Likewise, a SUBSCRIBE_NAMESPACE for a
 moq-test-tracks Track Namespace also matches the longer Track Namespaces
-that extend it. A deployment that runs publishers of fixed sets of tracks
-alongside an on-demand publisher SHOULD give them distinct prefixes.
-Otherwise a relay can route a request that the on-demand publisher would
-serve to a fixed publisher that cannot.
+that extend it. Publishers that share a relay SHOULD have distinct
+prefixes, for example by including a field that identifies the publisher.
+Otherwise a relay can route a request to a publisher that does not serve
+it, such as a request that an on-demand publisher would serve to a
+publisher of fixed sets of tracks.
 
 Ending a set of tracks is not an error. When the duration in tuple field 12
 elapses, or when the publisher ends the tracks earlier, for example at a
