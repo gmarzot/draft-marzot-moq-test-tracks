@@ -131,8 +131,11 @@ are defined:
   attribution, the picture SHOULD show it.
 
 `clock`, `bars` and `noise` name classes of content by what they let a
-subscriber measure, not specific media. A clip identifier MUST NOT be one of
-these values.
+subscriber measure, not specific media. The values `black`, `motion`,
+`zoneplate`, `ramp`, `sweep`, `silence`, `sync`, `scroll`, `clip`, `none`,
+`any`, `all`, `default`, `test`, `live` and `random` are reserved for later
+revisions of this document. A clip identifier MUST NOT be a defined or
+reserved value.
 
 ## Tuple Field 2: Packaging
 
