@@ -27,7 +27,7 @@ author:
  -
     fullname: Giovanni Marzot
     organization: Oracle
-    email: giovanni.marzot@oracle.com
+    email: gmarzot@marzresearch.net
 
 normative:
   MOQT: I-D.ietf-moq-transport
@@ -44,11 +44,12 @@ informative:
 
 --- abstract
 
-This document specifies the moq-test-tracks protocol, a testing protocol for
-Media over QUIC (MOQ) media implementations. Like moq-test, moq-test-tracks
-utilizes the Track Namespace as parameters to the publisher. The parameters
-describe a set of media tracks (catalog, packaging, codecs and delivery), so
-that a publisher can generate media of a requested shape.
+This document specifies moq-test-tracks, a protocol for testing Media over
+QUIC (MOQ) media implementations. Like moq-test, it carries its parameters
+to the publisher in the Track Namespace. The parameters describe a set of
+media tracks, including the catalog, packaging, codecs and delivery, so that
+any publisher that implements the protocol can generate media of the
+requested shape.
 
 --- middle
 
@@ -61,17 +62,18 @@ video and audio, a catalog, and a specific packaging. Catalog parsers,
 packagers, players and relays can then be tested against media of a known
 shape.
 
-By leveraging the Track Namespace, moq-test-tracks lets testers specify the
-content, packaging, codecs, resolution, frame rate, catalog format, group
-duration, audio delivery and number of video tracks. Any publisher
-that implements the protocol can produce them, without out-of-band
-coordination. Each set of parameters has one shortest Track Namespace, which
-publishers use, so subscribers requesting the same media share one set of
-tracks, and results from different publishers can be compared.
+In the Track Namespace, testers specify the content, packaging, codecs,
+resolution, frame rate, catalog format, placement of initialization data,
+group duration, audio delivery, duration and number of video tracks. Any
+publisher that implements the protocol can produce the requested tracks
+without out-of-band coordination. Each set of parameters has one shortest
+Track Namespace, which publishers use to name it. Subscribers that request
+the same media therefore share one set of tracks, and results from
+different publishers can be compared.
 
 # Track Namespace Parameters
 
-The moq-test-tracks protocol utilizes the Track Namespace to convey the
+The moq-test-tracks protocol uses the Track Namespace to convey the
 parameters of a set of media tracks to the publisher. The Track Namespace
 tuple fields are defined as follows. {{examples}} shows complete Track
 Namespaces.
@@ -86,25 +88,25 @@ Namespaces.
 * MOQT does not permit empty Track Namespace fields {{MOQT}}, so every
   tuple field that is present carries an explicit value.
 * A field that does not apply to the set of tracks MUST be `_`. For example,
-  the audio fields are `_` when there is no audio. An omitted field that
-  does not apply is `_`.
-* Field values use only the characters a-z, 0-9 and `_`, which the MOQT
+  the audio fields are `_` when there is no audio. A field that does not
+  apply takes the value `_` when omitted.
+* Tuple field values use only the characters a-z, 0-9 and `_`, which the MOQT
   name representation renders verbatim ({{Section 8.8 of MOQT}}). Numeric
   fields are decimal integers without leading zeros.
 
-Track Namespaces that differ only in tuple fields omitted from one and
-spelled out with the same values in the other describe the same set of
-tracks. A publisher that names a set of tracks itself, for example in
-PUBLISH_NAMESPACE or PUBLISH, MUST omit every trailing tuple field whose
-value equals the value it takes when omitted.
+Track Namespaces that differ only in trailing tuple fields, which one omits
+and the other spells out with the values they take when omitted, describe
+the same set of tracks. A publisher that names a set of tracks itself, for
+example in PUBLISH_NAMESPACE or PUBLISH, MUST omit every trailing tuple
+field whose value equals the value it takes when omitted.
 
-Future versions will use a different value for tuple field 0 and potentially
-define a different set of parameters.
+Future versions will use a different value for tuple field 0 and may define
+a different set of parameters.
 
 ## Tuple Field 0: "mtt_00"
 
-This field indicates that the Track Namespace parameters are for the
-moq-test-tracks protocol.
+This field identifies the moq-test-tracks protocol and this version of its
+parameters. Its value is `mtt_00`.
 
 ## Tuple Field 1: Content {#content}
 
@@ -114,9 +116,9 @@ are defined:
 
 * clock := A moving picture with a 440 Hz tone. The picture shows the
   capture time of each frame and a frame counter, and SHOULD show the group
-  and object IDs. Once per second, a 1 kHz beep plays for 100 ms and the
-  picture shows a marker for one frame, so that audio/video sync can be
-  checked.
+  and object IDs. At each whole second of capture time, a 1 kHz beep plays
+  for 100 ms and the picture shows a marker for one frame, so that
+  audio/video sync can be checked.
 * bars := Static color bars with a 1 kHz tone. The media compresses to near
   the encoder's minimum.
 * noise := Random noise in picture and sound. The encoder runs at the target
@@ -131,8 +133,11 @@ are defined:
   attribution, the picture SHOULD show it.
 
 `clock`, `bars` and `noise` name classes of content by what they let a
-subscriber measure, not specific media. A clip identifier MUST NOT be one of
-these values.
+subscriber measure, not specific media. The values `black`, `motion`,
+`zoneplate`, `ramp`, `sweep`, `silence`, `sync`, `scroll`, `clip`, `none`,
+`any`, `all`, `default`, `test`, `live` and `random` are reserved for later
+revisions of this document. A clip identifier MUST NOT be a defined or
+reserved value.
 
 ## Tuple Field 2: Packaging
 
@@ -279,7 +284,8 @@ field 4. For example, `alt4` at a height of 1080 yields 1080, 720, 540 and
 tuple field 5 and the bitrate of its own height ({{bitrates}}).
 
 With `clock`, `bars` or `noise` content, the views are distinct pictures of
-that content. A clip identifies a set of synchronized views ({{content}}).
+that content. With a clip, the views are the clip's synchronized views, if
+it has them ({{content}}).
 
 With values other than 1, tuple field 8 MUST be `msf`.
 
@@ -293,7 +299,7 @@ Track Names:
 * "video", unless tuple field 3 is `none`. With more than one video track
   ({{video-tracks}}), the others are "video_1", "video_2" and so on, in
   ladder or view order.
-* "audio", unless tuple field 6 is `none`
+* "audio", unless tuple field 6 is `none`.
 
 The "video", "video_N" and "audio" Track Names are defined by this
 document.
@@ -411,10 +417,11 @@ These times agree with the mapped timestamp to within one tick, as
 microseconds and ticks do not divide evenly.
 
 Latency is the time at which an object is received minus its capture time.
-It includes encoding only when the publisher encodes live, so latency
-results state how the publisher encoded the media. Measuring it requires the subscriber's clock to agree with the publisher's,
-for example by running the subscriber on the publisher's host, or by
-synchronizing both to a common time source.
+It includes encoding only when the publisher encodes live, so a latency
+result needs to state whether the publisher encoded the media live or ahead
+of time. Measuring latency requires the subscriber's clock to agree with the
+publisher's, for example by running the subscriber on the publisher's host,
+or by synchronizing both to a common time source.
 
 # Publisher Behavior {#publisher-behavior}
 
@@ -425,11 +432,13 @@ SHOULD identify the tuple field. If producing the tracks would exceed the
 publisher's limits, the publisher MUST respond with REQUEST_ERROR with error
 code EXCESSIVE_LOAD.
 
-A publisher delivers a set of tracks in one of two ways. It sends
-PUBLISH_NAMESPACE for the Track Namespace and then PUBLISH for each track,
-so that relays receive the tracks before any subscriber asks for them. Or it
-sends PUBLISH_NAMESPACE for the Track Namespace only, and relays forward
-each SUBSCRIBE for a track in the namespace to it.
+A publisher delivers a set of tracks in one of two ways:
+
+* It sends PUBLISH_NAMESPACE for the Track Namespace and then PUBLISH for
+  each track, so that relays receive the tracks before any subscriber asks
+  for them.
+* It sends PUBLISH_NAMESPACE for the Track Namespace only, and relays
+  forward each SUBSCRIBE for a track in the namespace to it.
 
 Upon receiving a valid SUBSCRIBE or FETCH for a moq-test-tracks track, the
 publisher MUST publish objects according to the parameters of the namespace.
@@ -437,7 +446,10 @@ publisher MUST publish objects according to the parameters of the namespace.
 Upon receiving a SUBSCRIBE_TRACKS whose Track Namespace Prefix is a
 moq-test-tracks Track Namespace, the publisher MUST use PUBLISH to send each
 track in the namespace. If a PUBLISH is rejected, the publisher MUST stop
-sending objects for that track immediately.
+sending objects for that track immediately. A Track Namespace Prefix that
+ends before tuple field 7 names no set of tracks. For such a prefix, the
+publisher sends PUBLISH only for the tracks of sets it is already producing
+under the prefix, and starts no new set.
 
 A publisher MAY serve moq-test-tracks on demand. To do so, it sends
 PUBLISH_NAMESPACE for a prefix that ends with `mtt_00`, or with `mtt_00`
@@ -445,16 +457,27 @@ and a value of tuple field 1 to serve only that content, such as one clip.
 Relays route any SUBSCRIBE whose Track Namespace matches this prefix to the
 publisher ({{Section 2.4.2 of MOQT}}).
 
+* The prefix is the only Track Namespace the publisher announces for the
+  sets of tracks it can produce. The parameters allow far too many sets to
+  enumerate, and no set exists until a request names its Track Namespace.
 * The publisher begins producing a set of tracks upon the first request for
-  its Track Namespace.
+  its Track Namespace. While it produces the set, it MAY send
+  PUBLISH_NAMESPACE for the set's Track Namespace. If it does, it sends
+  PUBLISH_NAMESPACE_DONE when it stops producing the set.
 * It serves later requests for the same Track Namespace from the same media.
   It MAY also serve a Track Namespace that describes the same set of tracks
   from the same media.
 * It MAY stop producing the tracks when no subscriptions remain.
 
-A subscriber can discover the content a deployment serves, including its
-clips, by sending SUBSCRIBE_NAMESPACE for the deployment's prefix followed
-by `mtt_00` {{MOQT}}.
+A subscriber discovers what a deployment serves by sending
+SUBSCRIBE_NAMESPACE for the deployment's prefix followed by `mtt_00`
+{{MOQT}}. It receives the prefixes that on-demand publishers announce, and
+the Track Namespaces of the sets that publishers announce while producing
+them. An on-demand publisher that announces one prefix for each value of
+tuple field 1 it serves thereby lists its content, including its clips. The
+subscriber does not learn which other parameters a publisher supports. It
+writes out the Track Namespace it wants, and a publisher that does not
+support that set of tracks responds with DOES_NOT_EXIST.
 
 A Track Namespace that omits trailing tuple fields is a tuple prefix of the
 Track Namespaces that spell them out. A relay that routes by Track Namespace
@@ -462,10 +485,11 @@ prefix can therefore forward a request for a longer Track Namespace to the
 publisher of a shorter one, which returns DOES_NOT_EXIST unless it serves
 the requested set of tracks. Likewise, a SUBSCRIBE_NAMESPACE for a
 moq-test-tracks Track Namespace also matches the longer Track Namespaces
-that extend it. A deployment that runs publishers of fixed sets of tracks
-alongside an on-demand publisher SHOULD give them distinct prefixes.
-Otherwise a relay can route a request that the on-demand publisher would
-serve to a fixed publisher that cannot.
+that extend it. Publishers that share a relay SHOULD have distinct
+prefixes, for example by including a field that identifies the publisher.
+Otherwise a relay can route a request to a publisher that does not serve
+it, such as a request that an on-demand publisher would serve to a
+publisher of fixed sets of tracks.
 
 Ending a set of tracks is not an error. When the duration in tuple field 12
 elapses, or when the publisher ends the tracks earlier, for example at a
@@ -487,13 +511,12 @@ subscribers rely on PUBLISH_DONE.
 The publisher MUST NOT use GOAWAY to end tracks; GOAWAY asks peers to move
 to a new session.
 
-When audio is sent in datagrams, certain combinations of codec and channels
-result in objects that cannot be transmitted below the maximum datagram
-size. If the publisher detects this when handling the request, it MUST
-respond with REQUEST_ERROR with error code DOES_NOT_EXIST. If it detects
-this when publishing an object, it MUST send PUBLISH_DONE with status code
-INTERNAL_ERROR. The publisher MUST NOT send such objects on a stream
-instead.
+When audio is sent in datagrams, some combinations of codec and channels
+produce objects larger than the maximum datagram size. If the publisher
+detects this when handling the request, it MUST respond with REQUEST_ERROR
+with error code DOES_NOT_EXIST. If it detects this when publishing an
+object, it MUST send PUBLISH_DONE with status code INTERNAL_ERROR. The
+publisher MUST NOT send such objects on a stream instead.
 
 Media encoders are not deterministic, so object payloads differ between
 publishers for the same Track Namespace. A subscriber that validates
@@ -508,12 +531,12 @@ the set.
 
 # Security Considerations
 
-The subscriber can generate an asymmetric amount of work on the server, and
-encoding media makes it larger than for moq-test. Servers SHOULD set limits
-on values such as height, frame rate, duration, the number of video tracks
-and the number of concurrent sets of tracks, to prevent resource exhaustion
-attacks. Servers SHOULD serve all subscriptions to one Track Namespace from
-a single set of tracks.
+A subscriber can make a publisher do far more work than the request
+costs, and encoding media makes the imbalance larger than for moq-test.
+Publishers SHOULD set limits on values such as height, frame rate,
+duration, the number of video tracks and the number of concurrent sets of
+tracks, to prevent resource exhaustion attacks. Publishers SHOULD serve all
+subscriptions to one Track Namespace from a single set of tracks.
 
 A publisher serving on demand SHOULD do so only through relays that
 authorize subscribers for its prefix, for example with Common Access Tokens
@@ -611,6 +634,7 @@ example/mtt_00/
 # Acknowledgments
 {:numbered="false"}
 
-This document builds on moq-test {{MoQTest}} by Alan Frindell. Thanks to
-the OpenMOQ team for implementations and test deployments, and to members
-of the Media over QUIC working group for discussion and review.
+This document builds on moq-test {{MoQTest}} by Alan Frindell, who also
+reviewed it. Thanks to the OpenMOQ team for implementations and test
+deployments, and to members of the Media over QUIC working group for
+discussion and review.
